@@ -1,223 +1,150 @@
 <?php
+
 /*
- * Plugin Name:       Kashing
- * Plugin URI:        http://github.com/tommcfarlin/post-meta-manager
- * Description:       Single Post Meta Manager displays the post meta data associated with a given post.
- * Version:           0.2.0
- * Author:            Tom McFarlin
- * Author URI:        http://tommcfarlin.com
- * Text Domain:       single-post-meta-manager-locale
- * License:           GPL-2.0+
- * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
- * Domain Path:       /languages
- */
- 
+
+Plugin Name: 	Kashing
+Plugin URI: 	ttp://themeforest.net/user/Veented
+Description: 	Easily integrate Kashing Payment with your WordPress website.
+Version: 		1.0
+Author: 		Veented
+Author URI: 	http://themeforest.net/user/Veented
+License: 		GPL2
+
+*/
+
 if ( ! defined( 'WPINC' ) ) {
     die;
 }
 
+define( 'KASHING_PATH', dirname(__FILE__) . '/' );
 
+class Kashing_Payments {
 
-add_action('init', 'engage_portfolio_register');  
+    public $prefix = 'kashing'; // Taki prefix uzywamy do nazw funkcji
 
-if ( !function_exists("engage_portfolio_register") ) {
-    
-	function engage_portfolio_register() {
-		
-	    $args = array(
-	        'label' => esc_html__( 'Kashing Payments', 'crexis'),
-	        'public' => true,
-	        'show_ui' => true,
-	        'capability_type' => 'post',
-	        'hierarchical' => true,
-	        'has_archive' => false,
-	        'menu_icon' => 'dashicons-art',
-	        'supports' => array( 'title' )
-        );  
-	
-	    register_post_type( 'kashing-forms' , $args );
-	    
-	}
-    
-}
+    /**
+     * Class constructor.
+     */
 
-// Metabox
+    function __construct() {
 
-function your_prefix_get_meta_box( $meta_boxes ) {
-	$prefix = 'prefix-';
+        // Load Metabox Core
 
-	$meta_boxes[] = array(
-		'id' => 'untitled',
-		'title' => esc_html__( 'Untitled Metabox', 'metabox-online-generator' ),
-		'post_types' => array( 'kashing-forms' ),
-		'context' => 'advanced',
-		'priority' => 'high',
-		'autosave' => false,
-		'fields' => array(
-			array(
-				'id' => $prefix . 'amount',
-				'type' => 'text',
-				'name' => esc_html__( 'Amount', 'metabox-online-generator' ),
-				'desc' => esc_html__( 'Dodatkowy opis', 'metabox-online-generator' ),
-			),
-			array(
-				'id' => $prefix . 'name',
-				'name' => esc_html__( 'Name', 'metabox-online-generator' ),
-				'type' => 'checkbox',
-				'std' => true,
-			),
-			array(
-				'id' => $prefix . 'last_name',
-				'name' => esc_html__( 'Last Name', 'metabox-online-generator' ),
-				'type' => 'checkbox',
-				'std' => true,
-			),
-			array(
-				'id' => $prefix . 'address1',
-				'name' => esc_html__( 'Address 1', 'metabox-online-generator' ),
-				'type' => 'checkbox',
-			),
-		),
-        'validation' => array(
-            'rules'  => array(
-                $prefix . 'amount' => array(
-                    'required'  => true,
-                    'minlength' => 7,
-                ),
-            ),
-            // Optional override of default error messages
-            'messages' => array(
-                $prefix . 'amount' => array(
-                    'required'  => 'API Key is required',
-                    'minlength' => 'Password must be at least 7 characters',
-                ),
-            )
-        )
-	);
+        $this->load_metaboxes();
 
-	return $meta_boxes;
-}
-add_filter( 'rwmb_meta_boxes', 'your_prefix_get_meta_box' );
+        // Plugin Options Page
 
-// Shortcode
+        $this->options_page();
 
-function kashing_form_config( $atts, $content = null ) {
-    
-    extract( shortcode_atts( array(
-        "id" => '',
-	), $atts ) );
-    
-    $test = 'podany ID: ' . $id;
-    
-    $test .= '<br>Amount: ' . get_post_meta( $id, 'prefix-amount', TRUE );
-    
-    if ( get_post_meta( $id, 'prefix-name', TRUE ) == true ) {
-        $test .= 'Wyswietl pole z imieniem';
-    } else {
-        $test .= 'Nie wyswietlaj';
+        // Plugin scripts and styles
+
+        add_action( 'admin_enqueue_scripts', array( $this, 'action_admin_enqueue_scripts' ) );
+        add_action( 'wp_enqueue_scripts', array( $this, 'action_wp_enqueue_scripts' ) );
+
+        // Register custom post types
+
+        $this->register_post_type();
+
+        // Load Metaboxes
+
+        $this->load_metaboxes();
+
+        // Load Shortcodes
+
+        $this->load_shortcodes();
+
     }
-    
-    return $test;
-}
 
-add_shortcode( 'kashing_form', 'kashing_form_config' );
+    /**
+     * Load Metaboxes.
+     */
 
-// Settings Page
+    private function load_metaboxes() {
 
-// Register settings page. In this case, it's a theme options page
-add_filter( 'mb_settings_pages', 'prefix_options_page' );
-function prefix_options_page( $settings_pages ) {
-    $settings_pages[] = array(
-        'id'          => 'pencil',
-        'option_name' => 'pencil',
-        'menu_title'  => 'Pencil',
-        'icon_url'    => 'dashicons-edit',
-        'style'       => 'no-boxes',
-        'columns'     => 1,
-        'tabs'        => array(
-            'general' => 'General Settings',
-            'design'  => 'Design Customization',
-            'faq'     => 'FAQ & Help',
-        ),
-        'position'    => 68,
-    );
-    return $settings_pages;
-}
+        require_once KASHING_PATH . 'inc/metaboxes.php';
 
-// Register meta boxes and fields for settings page
-add_filter( 'rwmb_meta_boxes', 'prefix_options_meta_boxes' );
+    }
 
-function prefix_options_meta_boxes( $meta_boxes ) {
-    $meta_boxes[] = array(
-        'id'             => 'general',
-        'title'          => 'General',
-        'settings_pages' => 'pencil',
-        'tab'            => 'general',
+    /**
+     * Plugin Options Page.
+     */
 
-        'fields' => array(
-            array(
-                'name' => 'API key',
-                'id'   => 'api_key',
-                'type' => 'text',
-            ),
-            array(
-                'name'    => 'Layout',
-                'id'      => 'layout',
-                'type'    => 'image_select',
-                'options' => array(
-                    'sidebar-left'  => 'https://i.imgur.com/Y2sxQ2R.png',
-                    'sidebar-right' => 'https://i.imgur.com/h7ONxhz.png',
-                    'no-sidebar'    => 'https://i.imgur.com/m7oQKvk.png',
-                ),
-            ),
-        ),
-        'validation' => array(
-            'rules'  => array(
-                'api_key' => array(
-                    'required'  => true,
-                    'minlength' => 7,
-                ),
-            ),
-            // Optional override of default error messages
-            'messages' => array(
-                'api_key' => array(
-                    'required'  => 'API Key is required',
-                    'minlength' => 'Password must be at least 7 characters',
-                ),
+    private function options_page() {
+
+        require_once KASHING_PATH . 'inc/kashing-options.php';
+
+    }
+
+    /**
+     * Register the main Kashing custom post type.
+     */
+
+    private function register_post_type() {
+
+        add_action( 'init', array( $this, 'action_register_post_type_kashing' ) );
+
+    }
+
+    /**
+     * Custom post type registration action.
+     */
+
+    public function action_register_post_type_kashing() { // Must be public so it can be accessed by WordPress add_action()
+
+        $args = array(
+            'label' => __( 'Kashing', 'kashing' ),
+            'public' => true,
+            'show_ui' => true,
+            'capability_type' => 'post',
+            'hierarchical' => true,
+            'has_archive' => false,
+            'menu_icon' => 'dashicons-tickets-alt',
+            'supports' => array( 'title' ),
+            'exclude_from_search' => true,
+            'show_in_nav_menus' => false,
+            'show_in_menu' => true,
+            'show_in_admin_bar' => false,
+            'has_archive' => false,
+            'public' => false,
+            'publicly_queryable' => true,
+            'rewrite' => false,
+            'labels' => array(
+                'add_new' => __( 'Add New Form', 'kashing' ),
+                'all_items' => __( 'View Forms', 'kashing' )
             )
-        )
-    );
-    $meta_boxes[] = array(
-        'id'             => 'colors',
-        'title'          => 'Colors',
-        'settings_pages' => 'pencil',
-        'tab'            => 'design',
+        );
 
-        'fields' => array(
-            array(
-                'name' => 'Heading Color',
-                'id'   => 'heading-color',
-                'type' => 'color',
-            ),
-            array(
-                'name' => 'Text Color',
-                'id'   => 'text-color',
-                'type' => 'color',
-            ),
-        ),
-    );
+        register_post_type( 'kashing' , $args );
 
-    $meta_boxes[] = array(
-        'id'             => 'info',
-        'title'          => 'Theme Info',
-        'settings_pages' => 'pencil',
-        'tab'            => 'faq',
-        'fields'         => array(
-            array(
-                'type' => 'custom_html',
-                'std'  => 'Having questions? Check out our documentation',
-            ),
-        ),
-    );
-    return $meta_boxes;
+    }
+
+    /**
+     * Admin scripts and styles.
+     */
+
+    public function action_admin_enqueue_scripts() {
+        wp_enqueue_style( 'kashing-admin', plugin_dir_url( __FILE__ ) . 'assets/css/kashing-admin.css' );
+    }
+
+    /**
+     * Frontend scripts and styles.
+     */
+
+    public function action_wp_enqueue_scripts() {
+        wp_enqueue_style( 'kashing-frontend-css', plugin_dir_url( __FILE__ ) . 'assets/css/kashing-frontend.css' );
+        wp_register_script( 'kashing-frontend-js', plugin_dir_url( __FILE__ ) . 'assets/js/kashing.js', array( 'jquery' ) );
+        //wp_enqueue_script( 'kashing-frontend-js' );
+    }
+
+    /**
+     * Load shortcodes.
+     */
+
+    private function load_shortcodes() {
+        require_once KASHING_PATH . 'inc/shortcodes/kashing-form.php';
+    }
+
 }
+
+$kashing_payments = new Kashing_Payments();
+
