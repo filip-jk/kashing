@@ -8,58 +8,96 @@ if ( !function_exists( 'kashing_form_shortcode' ) ) {
             "form_id" => '',
         ), $atts ) );
 
-        ob_start(); // We can use HTML directly thanks to this
+        // Quick checks
 
-        // Zapytanie do API
-
-        echo 'Bla:<br><br><br>';
-
-        $url = 'https://development-backend.kashing.co.uk/transaction/init';
-
-        $array = array(
-            'transactions' => array(array(
-                'merchantid' => "207",
-                'amount' => "100",
-                'currency' => "GBP",
-                'returnurl' => 'http://veented.com',
-                "ip" => "192.168.0.111",
-                "forwardedip" => "80.177.11.240",
-                "merchanturl" => "shop.test.co.uk",
-                "description" => "test description",
-                "firstname" => "Ten",
-                "lastname" => "Green",
-                "address1" => "Flat 6 Primrose Rise",
-                "city" => "Northampton",
-                "postcode" => "12-123",
-                "country" => "UK",
-                "psign" => "7bda80def2391a02891970db5c5f2c58ccd4596b"
-            ))
-        );
-
-        $body = json_encode( $array );
-
-        print_r( $body ); // Wypisujemy BODY zeby zobaczyc jak wyglada
-
-        $response = wp_remote_post(
-            $url,
-            array(
-                'method' => 'POST',
-                'timeout' => 10,
-                'headers' => array( 'Content-Type' => 'application/json' ),
-                'body' => $body,
-            )
-        );
-
-        if ( is_wp_error( $response ) ) {
-            $error_message = $response->get_error_message();
-            echo "Something went wrong: $error_message";
-        } else {
-            echo 'Response:<pre>';
-            print_r( $response );
-            echo '</pre>';
+        if ( $form_id == '' ) { // No form is selected
+            return esc_html( 'No Kashing Form was selected.', 'kashing' );
+        } elseif ( get_post_status( $form_id ) === false ) { // Form doesn't exist
+            return esc_html( 'Selected Kashing Form does not exist.', 'kashing' );
         }
 
-        echo 'Event id: ' . $form_id; // takie tam pierdoly
+        // Enqueue form related scripts and styles
+
+        wp_enqueue_script( 'kashing-frontend-css' );
+        wp_enqueue_style( 'kashing-frontend-js' );
+
+        // Get prefix
+
+        $prefix = Kashing_Payments::$data_prefix;
+
+        ob_start(); // We can use HTML directly thanks to this
+
+        ?>
+
+        <form class="kashing-form">
+
+            <div class="input-holder">
+                <label for="kashing-firstname"><?php esc_html_e( 'First Name', 'kashing' ); ?></label>
+                <input type="text" name="firstname" id="kashing-firstname" class="kashing-required-field" value="Ten">
+            </div>
+
+            <div class="input-holder">
+                <label for="kashing-lastname"><?php esc_html_e( 'Last Name', 'kashing' ); ?></label>
+                <input type="text" name="lastname" id="kashing-lastname" class="kashing-required-field" value="Green">
+            </div>
+
+            <div class="input-holder">
+                <label for="kashing-address1"><?php esc_html_e( 'Address 1', 'kashing' ); ?></label>
+                <input type="text" name="address1" id="kashing-address1" class="kashing-required-field" value="Flat 6 Primrose Rise">
+            </div>
+
+            <?php
+
+            // Check if the address2 field is enabled in the form meta options.
+
+            if ( get_post_meta( $form_id, $prefix . 'address2', true ) == true ) {
+
+            ?>
+
+            <div class="input-holder">
+                <label for="kashing-address2"><?php esc_html_e( 'Address 2', 'kashing' ); ?></label>
+                <input type="text" name="address2" id="kashing-address2" value>
+            </div>
+
+            <?php
+
+            } // End address2 field check
+
+            ?>
+
+            <div class="input-holder">
+                <label for="kashing-city"><?php esc_html_e( 'City', 'kashing' ); ?></label>
+                <input type="text" name="city" id="kashing-city" class="kashing-required-field" value="Northampton">
+            </div>
+
+            <div class="input-holder">
+                <label for="kashing-postcode"><?php esc_html_e( 'Post Code', 'kashing' ); ?></label>
+                <input type="text" name="postcode" id="kashing-postcode" class="kashing-required-field" value="12-123">
+            </div>
+
+            <div class="input-holder">
+                <label for="kashing-country"><?php esc_html_e( 'Country', 'kashing' ); ?></label>
+                <select name="country" id="kashing-country" class="kashing-required-field">
+                    <?php
+
+                    $countries = array(
+                        'UK' => 'United Kingdom',
+                        'US' => 'United States'
+                    );
+
+                    foreach( $countries as $country_code => $country_name ) {
+                        echo '<option value="' . esc_attr( $country_code ) . '">' . esc_html( $country_name ) . '</option>';
+                    }
+
+                    ?>
+                </select>
+            </div>
+
+            <button class="button btn" id="kashing-pay" type="button"><?php esc_html_e('Pay with Kashing', 'kashing' ); ?></button>
+
+        </form>
+
+        <?php
 
         $content = ob_get_contents(); // End content "capture" and store it into a variable.
         ob_end_clean();

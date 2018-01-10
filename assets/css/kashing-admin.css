@@ -1,0 +1,10 @@
+
+
+
+.post-type-kashing .rwmb-settings-no-boxes .rwmb-label {
+    max-width: 240px;
+}
+
+.post-type-kashing input[type=text] {
+    min-width: 300px;
+}

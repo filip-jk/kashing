@@ -49,8 +49,21 @@ class Kashing_Options {
 
             'fields' => array(
                 array(
-                    'name' => __( 'API key', 'kashing' ),
-                    'id'   => 'api_key',
+                    'name' => __( 'Merchant ID', 'kashing' ),
+                    'desc' => __( 'Your merchant ID.', 'kashing' ),
+                    'id'   => 'merchant_id',
+                    'type' => 'text',
+                ),
+                array(
+                    'name' => __( 'Secret Key', 'kashing' ),
+                    'desc' => __( 'Enter your Kashing Secret Key.', 'kashing' ),
+                    'id'   => 'skey',
+                    'type' => 'text',
+                ),
+                array(
+                    'name' => __( 'Public Key', 'kashing' ),
+                    'desc' => __( 'Enter your Kashing Public Key.', 'kashing' ),
+                    'id'   => 'pkey',
                     'type' => 'text',
                 ),
             ),
@@ -79,9 +92,14 @@ class Kashing_Options {
 
             'fields' => array(
                 array(
-                    'name' => __( 'Other option', 'kashing' ),
-                    'id'   => 'option_id',
-                    'type' => 'text',
+                    'name' => __( 'Currency', 'kashing' ),
+                    'type' => 'heading',
+                ),
+                array(
+                    'name' => __( 'Choose Currency', 'kashing' ),
+                    'id'   => 'currency',
+                    'type' => 'select',
+                    'options' => kashing_get_currencies_array()
                 ),
             ),
         );
@@ -93,3 +111,13 @@ class Kashing_Options {
 
 $kashing_option = new Kashing_Options();
 
+function kashing_get_currencies_array() {
+
+    $currencies = array(
+        'gbp'   => 'GBP',
+        'usd'   => 'USD'
+    );
+
+    return $currencies;
+
+}
