@@ -26,12 +26,6 @@ class Kashing_Ajax {
      * Ajax function added to wp_ajax. Can be called with jQuery AJAX.
      */
 
-    function ajaxX_process() {
-
-        wp_send_json_success( 'success!' );
-
-    }
-
     function ajax_process() {
 
         // Required form fields (client input)
