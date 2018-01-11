@@ -19,6 +19,7 @@
                 dataType: 'JSON',
                 data: {
                     action: 'call_kashing_ajax', // Name of the PHP function assigned to WP Ajax
+                    form_id: $( '#kashing-form-id' ).val(),
                     // ANY other properties of data are passed to your_function()
                     // in the PHP global $_REQUEST (or $_POST in this case)
                     firstname : $( '#kashing-firstname' ).val(),

@@ -33,11 +33,11 @@ class Kashing_Metaboxes {
 
     function filter_add_metaboxes( $meta_boxes ) {
 
-        $prefix = 'ksng-';
+        $prefix = Kashing_Payments::$data_prefix;
 
         $meta_boxes[] = array(
             'id' => 'untitled',
-            'title' => esc_html__( 'Untitled Metabox', 'metabox-online-generator' ),
+            'title' => esc_html__( 'Kashing Form Settings', 'kashing' ),
             'post_types' => array( 'kashing' ),
             'context' => 'advanced',
             'priority' => 'high',
@@ -46,24 +46,24 @@ class Kashing_Metaboxes {
                 array(
                     'id' => $prefix . 'amount',
                     'type' => 'text',
-                    'name' => esc_html__( 'Amount', 'metabox-online-generator' ),
-                    'desc' => esc_html__( 'Dodatkowy opis', 'metabox-online-generator' ),
+                    'name' => esc_html__( 'Amount', 'kashing' ),
+                    'desc' => esc_html__( 'Dodatkowy opis', 'kashing' ),
                 ),
                 array(
                     'id' => $prefix . 'name',
-                    'name' => esc_html__( 'Name', 'metabox-online-generator' ),
+                    'name' => esc_html__( 'Name', 'kashing' ),
                     'type' => 'checkbox',
                     'std' => true,
                 ),
                 array(
                     'id' => $prefix . 'last_name',
-                    'name' => esc_html__( 'Last Name', 'metabox-online-generator' ),
+                    'name' => esc_html__( 'Last Name', 'kashing' ),
                     'type' => 'checkbox',
                     'std' => true,
                 ),
                 array(
                     'id' => $prefix . 'address1',
-                    'name' => esc_html__( 'Address 1', 'metabox-online-generator' ),
+                    'name' => esc_html__( 'Address 1', 'kashing' ),
                     'type' => 'checkbox',
                 ),
             ),
@@ -71,7 +71,7 @@ class Kashing_Metaboxes {
                 'rules'  => array(
                     $prefix . 'amount' => array(
                         'required'  => true,
-                        'minlength' => 7,
+                        'minlength' => 1,
                     ),
                 ),
                 // Optional override of default error messages

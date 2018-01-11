@@ -5,6 +5,7 @@ class Kashing_Ajax {
     public $secret_key;
     public $public_key;
     public $api_url;
+    public $prefix;
 
     function __construct() {
 
@@ -20,6 +21,10 @@ class Kashing_Ajax {
 
         $this->api_url = 'https://development-backend.kashing.co.uk/';
 
+        // Set prefix
+
+        $prefix = Kashing_Payments::$data_prefix;
+
     }
 
     /**
@@ -27,6 +32,24 @@ class Kashing_Ajax {
      */
 
     function ajax_process() {
+
+        // Get form ID
+
+        if ( isset( $_REQUEST[ 'form_id' ] ) ) {
+
+            $form_id = $_REQUEST[ 'form_id'];
+
+            // Check if form with a given ID exists:
+
+            if ( get_post_status( $form_id ) === false ) {
+                wp_send_json_error( 'form doesnt exist' );
+                return;
+            }
+
+        } else { // No form ID provided with the call
+            wp_send_json_error( 'no form id given' );
+            return;
+        }
 
         // Required form fields (client input)
 
@@ -49,6 +72,7 @@ class Kashing_Ajax {
 
         if ( !empty( $missing_fields ) ) {
             wp_send_json_error( $missing_fields ); // Send an error response if a field is missing (in case JS didn't deal with it)
+            return;
         }
 
         // Full transaction URL
@@ -71,13 +95,25 @@ class Kashing_Ajax {
 //        $city = 'Northampton';
 //        $postcode = '12-123';
 //        $country = 'UK';
+        // $amount = 100;
+        // $currency = "GBP";
+
+        // Transaction Amount
+
+        $amount = $this->get_transaction_amount( $form_id );
+
+        if ( $amount == false ) wp_send_json_error( 'No amount is provided in the form.' );
+
+        // Currency
+
+        $currency = Kashing_Options::get_currency();
 
         // Array with transaction data
 
         $transaction_data = array(
             'merchantid' => $merchant_id,
-            'amount' => "100",
-            'currency' => "GBP",
+            'amount' => $amount,
+            'currency' => $currency,
             'returnurl' => 'http://veented.com',
             "ip" => "192.168.0.111",
             "forwardedip" => "80.177.11.240",
@@ -207,6 +243,22 @@ class Kashing_Ajax {
         }
 
         return $data_string;
+
+    }
+
+    /**
+     * Get the transaction amount from the form meta settings.
+     *
+     * @return string
+     */
+
+    public function get_transaction_amount( $form_id ) {
+
+        if ( get_post_meta( $form_id, Kashing_Payments::$data_prefix . 'amount', true ) != '' ) {
+            return get_post_meta( $form_id, Kashing_Payments::$data_prefix . 'amount', true );
+        }
+
+        return false;
 
     }
 

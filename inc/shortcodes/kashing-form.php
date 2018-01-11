@@ -93,6 +93,8 @@ if ( !function_exists( 'kashing_form_shortcode' ) ) {
                 </select>
             </div>
 
+            <input type="hidden" id="kashing-form-id" value="<?php echo esc_attr( $form_id ); ?>">
+
             <button class="button btn" id="kashing-pay" type="button"><?php esc_html_e('Pay with Kashing', 'kashing' ); ?></button>
 
         </form>
