@@ -81,7 +81,7 @@ class Kashing_Ajax {
 
         // Gather transaction data
 
-        $merchant_id = kashing_option( 'merchant_id' );
+        $merchant_id = kashing_option( 'test_merchant_id' );
 
         if ( $merchant_id == null ) {
             // Jakieś sprawdzenie wcześniejsze trzeba dodać tj. jeżeli merchant_id nie jest ustawiony w opcjach wtyczki to żeby od razu szedł error, a nie błędne zapytanie było wysyłane do API Kashingu

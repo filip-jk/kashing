@@ -34,7 +34,7 @@ class Kashing_Payments {
 
         // Plugin Options Page
 
-        $this->options_page();
+        $this->settings_page();
 
         // Plugin scripts and styles
 
@@ -77,9 +77,9 @@ class Kashing_Payments {
      * Plugin Options Page.
      */
 
-    private function options_page() {
+    private function settings_page() {
 
-        require_once KASHING_PATH . 'inc/kashing-options.php';
+        require_once KASHING_PATH . 'inc/kashing-settings.php';
 
     }
 

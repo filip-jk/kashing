@@ -49,6 +49,17 @@ class Kashing_Options {
 
             'fields' => array(
                 array(
+                    'name'    => __( 'Test Mode', 'kashing' ),
+                    'id'      => 'radio',
+                    'type'    => 'radio',
+                    'options' => array(
+                        'yes' => __( 'Yes', 'kashing' ),
+                        'no' => __( 'No', 'kashing' ),
+                    ),
+                    'std' => 'yes',
+                    'inline' => false,
+                ),
+                array(
                     'name' => __( 'Merchant ID', 'kashing' ),
                     'desc' => __( 'Your merchant ID.', 'kashing' ),
                     'id'   => 'merchant_id',
@@ -97,9 +108,17 @@ class Kashing_Options {
                 ),
                 array(
                     'name' => __( 'Choose Currency', 'kashing' ),
+                    'desc' => __( 'Choose a currency for your payments.', 'kashing' ),
                     'id'   => 'currency',
-                    'type' => 'select',
+                    'type' => 'select_advanced',
                     'options' => kashing_get_currencies_array()
+                ),
+                array(
+                    'name' => __( 'Return Page', 'kashing' ),
+                    'desc' => __( 'Choose the page your clients will be redirected to after the payment is completed.', 'kashing' ),
+                    'id'   => 'return_page',
+                    'type' => 'select_advanced',
+                    'options' => kashing_get_pages_array()
                 ),
             ),
         );
@@ -119,5 +138,25 @@ function kashing_get_currencies_array() {
     );
 
     return $currencies;
+
+}
+
+/**
+ * Retrieve an array of all pages.
+ *
+ * @return key => value array
+ */
+
+function kashing_get_pages_array() {
+
+    $pages = array();
+
+    $all_pages = get_pages();
+
+    foreach( $all_pages as $page ) {
+        $pages[ $page->ID ] = $page->post_title;
+    }
+
+    return $pages;
 
 }

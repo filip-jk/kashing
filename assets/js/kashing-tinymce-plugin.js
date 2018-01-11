@@ -1,7 +1,7 @@
 ( function() {
 
     tinymce.PluginManager.add( 'kashing_tinymce', function( editor, url ) {
-
+        
         // Add a button that opens a window
 
         editor.addButton( 'kashing_add_form', {
@@ -26,7 +26,7 @@
                             { text: 'Test2', value: '5' },
                             { text: 'Test3', value: '7' }
                         ]
-                    },],
+                    }],
                     onsubmit: function( e ) {
 
                         // Insert content when the window form is submitted

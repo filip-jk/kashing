@@ -13,8 +13,8 @@
 
             // Making an AJAX call to a PHP script:
 
-            $.ajax ({
-                url: kashing_wp_object.wp_ajax_url,
+            $.ajax({
+                url: kashing_wp_object.wp_ajax_url, // wp-ajax.php
                 type: 'POST',
                 dataType: 'JSON',
                 data: {
@@ -59,7 +59,7 @@
                     alert ('Request failed: ') ;
 
                 },
-            }) ;
+            });
 
         });
 

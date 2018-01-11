@@ -9,7 +9,11 @@
 
         $( '#add-kashing-form' ).on( 'click', function() {
 
-            alert( 'hey!' );
+            // Wyskakuje okienko
+
+            // W okienku lista rozwijalna z formularzami
+
+            // Po zatwierdzeniu, dodaje do edytora shortcode [kashing_form form_id="X"]
 
         });
 
