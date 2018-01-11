@@ -106,7 +106,7 @@ class Kashing_Ajax {
 
         // Currency
 
-        $currency = Kashing_Options::get_currency();
+        $currency = kashing_get_currency();
 
         // Array with transaction data
 

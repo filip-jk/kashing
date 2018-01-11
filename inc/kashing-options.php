@@ -107,18 +107,6 @@ class Kashing_Options {
         return $meta_boxes;
     }
 
-    /**
-     * Extract transaction data values from the transaction data array.
-     *
-     * @return string
-     */
-
-    public static function get_currency() {
-
-        return "GBP";
-
-    }
-
 }
 
 $kashing_option = new Kashing_Options();
@@ -126,8 +114,8 @@ $kashing_option = new Kashing_Options();
 function kashing_get_currencies_array() {
 
     $currencies = array(
-        'gbp'   => 'GBP',
-        'usd'   => 'USD'
+        'GBP'   => 'GBP',
+        'USD'   => 'USD'
     );
 
     return $currencies;

@@ -19,3 +19,23 @@ if ( !function_exists( 'kashing_option' ) ) {
 
     }
 }
+
+/**
+ * Helper function to easily grab a plugin option from the options array.
+ *
+ * @return string
+ */
+
+if ( !function_exists( 'kashing_get_currency' ) ) {
+    function kashing_get_currency() {
+
+        $currency = 'GBP';
+
+        if ( kashing_option( 'currency' ) != '' ) {
+            $currency = kashing_option( 'currency' );
+        }
+
+        return $currency;
+
+    }
+}
