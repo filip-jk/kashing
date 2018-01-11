@@ -132,8 +132,16 @@ class Kashing_Payments {
 
     public function action_admin_enqueue_scripts() {
         wp_enqueue_style( 'kashing-admin', plugin_dir_url( __FILE__ ) . 'assets/css/kashing-admin.css' );
-        wp_register_script( 'kashing-backend-js', plugin_dir_url( __FILE__ ) . 'assets/js/kashing-backend.js', array( 'jquery' ) );
-        wp_enqueue_script( 'kashing-backend-js' );
+        wp_enqueue_script( 'kashing-backend-js', plugin_dir_url( __FILE__ ) . 'assets/js/kashing-backend.js', array( 'jquery' ) );
+
+        wp_localize_script(
+            'kashing-backend-js',
+            'post_types_wp_object',
+            array(
+                'wp_ajax_url' => admin_url( 'admin-ajax.php' )
+            )
+        );
+
     }
 
     /**
@@ -142,6 +150,7 @@ class Kashing_Payments {
 
     public function action_wp_enqueue_scripts() {
         wp_enqueue_style( 'kashing-frontend-css', plugin_dir_url( __FILE__ ) . 'assets/css/kashing-frontend.css' );
+        
         wp_enqueue_script( 'kashing-frontend-js', plugin_dir_url( __FILE__ ) . 'assets/js/kashing-frontend.js', array( 'jquery' ) );
 
         // Localize the frontend JavaScript

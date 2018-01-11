@@ -12,6 +12,10 @@ class Kashing_Ajax {
         add_action( 'wp_ajax_call_kashing_ajax', array( $this, 'ajax_process' ) );
         add_action( 'wp_ajax_nopriv_call_kashing_ajax', array( $this, 'ajax_process' ) );
 
+        //shortcodes
+        add_action( 'wp_ajax_call_post_types_ajax',  array($this, 'get_post_types')  );
+        add_action( 'wp_ajax_nopriv_call_post_types_ajax', array($this, 'get_post_types')  );
+
         // Keys
 
         $this->secret_key = 'd708-636c-050e-41ba-4926-dbbe';
@@ -25,6 +29,44 @@ class Kashing_Ajax {
 
         $prefix = Kashing_Payments::$data_prefix;
 
+    }
+
+    function get_post_types() {
+
+        $custom_post_data = array();
+
+        $args = array(
+            'post_type' => 'kashing',
+            'posts_per_page' => -1
+        );
+
+        $the_query = new WP_Query( $args );
+
+        if ($the_query -> have_posts() ) {
+            while ( $the_query->have_posts() ) {
+                $the_query -> the_post();
+
+                $title = get_the_title();
+                $id = get_the_ID();
+
+                array_push($custom_post_data,
+                    array(
+                        'text' => $title,
+                        'value' => strval($id)
+                ));
+            }
+
+            $response = array(
+                'data' => array_reverse($custom_post_data)
+            );
+
+            wp_send_json_success( json_encode( $response ) );
+        } else {
+
+            wp_send_json_error( 'no posts yet');
+        }
+
+        wp_reset_query();
     }
 
     /**

@@ -190,7 +190,8 @@ class Kashing_Settings {
 
 }
 
-$kashing_option = new Kashing_Options();
+//ZMIANA
+$kashing_option = new Kashing_Settings();
 
 function kashing_get_currencies_array() {
 
