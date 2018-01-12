@@ -157,7 +157,7 @@ class Kashing_Settings {
 
         // Get options array
 
-        $option_array_name = Kashing_Options::$opt_name; // Name of the general option array
+        $option_array_name = Kashing_Settings::$opt_name; // Name of the general option array
         $options = get_option( $option_array_name );
 
         // Get field value
@@ -191,7 +191,8 @@ class Kashing_Settings {
 }
 
 //ZMIANA
-$kashing_option = new Kashing_Settings();
+
+$kashing_settings = new Kashing_Settings();
 
 function kashing_get_currencies_array() {
 
