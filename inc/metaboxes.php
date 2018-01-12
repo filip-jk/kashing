@@ -12,6 +12,7 @@ class Kashing_Metaboxes {
 
         require_once KASHING_PATH . 'inc/metabox-core/meta-box/meta-box.php';
         require_once KASHING_PATH . 'inc/metabox-core/extensions/mb-settings-page/mb-settings-page.php';
+        require_once KASHING_PATH . 'inc/metabox-core/extensions/meta-box-conditional-logic/meta-box-conditional-logic.php';
 
         // Add Kashing Post Type Metaboxes
 

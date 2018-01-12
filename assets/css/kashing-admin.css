@@ -8,3 +8,10 @@
 .post-type-kashing input[type=text] {
     min-width: 300px;
 }
+
+/* Kashing Settings Page */
+
+.kashing-extra-tip {
+    display: block;
+    margin-top: 10px;
+}

@@ -149,28 +149,30 @@ class MB_Settings_Page {
 				</h2>
 			<?php endif; ?>
 
-			<form method="post" action="" enctype="multipart/form-data" id="poststuff"<?php echo $class ? ' class="' . esc_html( $class ) . '"' : ''; ?>>
-				<?php
-				// Nonce for saving meta boxes status (collapsed/expanded) and order.
-				wp_nonce_field( 'closedpostboxes', 'closedpostboxesnonce', false );
-				wp_nonce_field( 'meta-box-order', 'meta-box-order-nonce', false );
-				?>
-				<div id="post-body" class="metabox-holder columns-<?php echo intval( $this->args['columns'] ); ?>">
-					<?php if ( $this->args['columns'] > 1 ) : ?>
-						<div id="postbox-container-1" class="postbox-container">
-							<?php do_meta_boxes( null, 'side', null ); ?>
+			<form method="post" action="" enctype="multipart/form-data" id="post"<?php echo $class ? ' class="' . esc_html( $class ) . '"' : ''; ?>>
+				<div id="poststuff">
+					<?php
+					// Nonce for saving meta boxes status (collapsed/expanded) and order.
+					wp_nonce_field( 'closedpostboxes', 'closedpostboxesnonce', false );
+					wp_nonce_field( 'meta-box-order', 'meta-box-order-nonce', false );
+					?>
+					<div id="post-body" class="metabox-holder columns-<?php echo intval( $this->args['columns'] ); ?>">
+						<?php if ( $this->args['columns'] > 1 ) : ?>
+							<div id="postbox-container-1" class="postbox-container">
+								<?php do_meta_boxes( null, 'side', null ); ?>
+							</div>
+						<?php endif; ?>
+						<div id="postbox-container-2" class="postbox-container">
+							<?php do_meta_boxes( null, 'normal', null ); ?>
+							<?php do_meta_boxes( null, 'advanced', null ); ?>
 						</div>
-					<?php endif; ?>
-					<div id="postbox-container-2" class="postbox-container">
-						<?php do_meta_boxes( null, 'normal', null ); ?>
-						<?php do_meta_boxes( null, 'advanced', null ); ?>
 					</div>
+					<br class="clear">
+					<p class="submit">
+						<?php submit_button( esc_html( $this->args['submit_button'] ), 'primary', 'submit', false ); ?>
+						<?php do_action( 'mb_settings_page_submit_buttons' ); ?>
+					</p>
 				</div>
-				<br class="clear">
-				<p class="submit">
-					<?php submit_button( esc_html( $this->args['submit_button'] ), 'primary', 'submit', false ); ?>
-					<?php do_action( 'mb_settings_page_submit_buttons' ); ?>
-				</p>
 			</form>
 		</div>
 		<?php

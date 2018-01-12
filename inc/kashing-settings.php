@@ -2,195 +2,169 @@
 
 class Kashing_Settings {
 
-    public static $opt_name = 'kashing_options'; // ten array będzie wykorzystywany do opcji
-
     /**
-     * Class Constructor.
+     * Class constructor.
      */
 
     function __construct() {
 
-        // Add Plugin Options Array
+        // Add options page
 
-        add_action( 'admin_init', array( $this, 'plugin_init_options' ) );
+        add_filter( 'mb_settings_pages', array( $this, 'add_options_page' ) );
 
-        // Plugin Options
+        // Add options page fields
 
-        add_action( 'admin_menu', array( $this, 'add_plugin_settings_page' ) );
-
-        // Define Plugin Setting Fields
-
-        add_action( 'admin_init', array( $this, 'add_plugin_setting_fields' ) );
+        add_filter( 'rwmb_meta_boxes', array( $this, 'add_options_page_fields' ) );
 
     }
 
     /**
-     * Initialize the plugin options array.
+     * Add options page.
      */
 
-    function plugin_init_options() {
+    public function add_options_page() {
 
-        add_option( 'kashing_options' );
-
-    }
-
-    /**
-     * Register plugin settings page menu item.
-     */
-
-    public function add_plugin_settings_page() {
-
-        call_user_func(
-            'add_submenu_page',
-            'edit.php?post_type=kashing',
-            esc_html__( 'Settings', 'engage' ),
-            esc_html__( 'Settings', 'engage' ),
-            'manage_options',
-            'kashing-settings',
-            array( $this, 'settings_page_view' )
+        $settings_pages[] = array(
+            'id'          => 'kashing-settings',
+            'option_name' => 'kashing',
+            'menu_title'  => __( 'Settings', 'kashing' ),
+            'page_title'  => __( 'Kashing Payments Settings', 'kashing' ),
+            'icon_url'    => 'dashicons-edit',
+            'style'       => 'no-boxes',
+            'parent'      => 'edit.php?post_type=kashing',
+            'columns'     => 1,
+            'tabs'        => array(
+                'configuration' => __( 'Configuration', 'kashing' ),
+                'general'  => __( 'General', 'kashing' )
+            ),
+            'position'    => 68,
         );
 
-    }
-
-    /**
-     * Plugin settings page view.
-     */
-
-    public function settings_page_view() { ?>
-
-        <div class="wrap">
-            <h1><?php esc_html_e( 'Kashing Payments', 'kashing' ); ?></h1>
-            <form method="post" action="options.php">
-                <?php
-
-                settings_fields("kashing-core" );
-
-                do_settings_sections("kashing-core-page" );
-
-                // Options Page Submit Button
-
-                submit_button();
-
-                ?>
-            </form>
-        </div>
-
-        <?php
+        return $settings_pages;
 
     }
 
     /**
-     * Define Plugin Setting Fields
+     * Declare Plugin Settings fields.
      */
 
-    public function add_plugin_setting_fields() {
+    public function add_options_page_fields( $meta_boxes ) {
 
-        // Add settings section
+        $kashing_api_key_docs = 'http://kashing.com/docs/how-to-get-api-key.html';
 
-        add_settings_section(
-            "kashing-core",
-            __( "Core Settings", 'kashing' ),
-            null,
-            "kashing-core-page"
-        );
+        $meta_boxes[] = array(
+            'id'             => 'configuration',
+            'title'          => 'API',
+            'settings_pages' => 'kashing-settings',
+            'tab'            => 'configuration',
 
-        // Add setting fields
-
-        // Test Public Key
-
-        add_settings_field(
-            "test_public_key",
-            __( 'Test Public Key', 'kashing' ),
-            array( $this, "display_setting_field" ),
-            "kashing-core-page",
-            "kashing-core",
-            array(
-                'option_name' => 'test_public_key',
-                'field_type' => 'text',
-                'desc' => __( 'Opis', 'kashing' ), // Mozna dodać obsługę description pod inputem
-                'validate' => 'jakas_walidacja' // Mozna przekazac w argumencie ze ma byc jakas walidacja danych tutaj wpisanych
+            'fields' => array(
+                array(
+                    'name'    => __( 'Test Mode', 'kashing' ),
+                    'desc' => __( 'Activate or deactivate the plugin Test Mode. When Test Mode is activated, no credit card payments are processed.', 'kashing' ) . '<span class="kashing-extra-tip"><a href="' . esc_url( $kashing_api_key_docs ) . '" target="_blank">' . __( 'Retrieve your Kashing API Keys', 'kashing' ) . '</a></span>',
+                    'id'      => 'test_mode',
+                    'type'    => 'radio',
+                    'options' => array(
+                        'yes' => __( 'Yes', 'kashing' ),
+                        'no' => __( 'No', 'kashing' )
+                    ),
+                    'std' => 'yes',
+                    'inline' => false,
+                ),
+                // Staging values
+                array(
+                    'name' => __( 'Test Merchant ID', 'kashing' ),
+                    'desc' => __( 'Enter your testing Merchant ID.', 'kashing' ),
+                    'id'   => 'test_merchant_id',
+                    'type' => 'text',
+                    'visible' => array( 'test_mode', '!=', 'no' )
+                ),
+                array(
+                    'name' => __( 'Test Secret Key', 'kashing' ),
+                    'desc' => __( 'Enter your testing Kashing Secret Key.', 'kashing' ),
+                    'id'   => 'test_skey',
+                    'type' => 'text',
+                    'visible' => array( 'test_mode', '!=', 'no' )
+                ),
+                array(
+                    'name' => __( 'Test Public Key', 'kashing' ),
+                    'desc' => __( 'Enter your testing Kashing Public Key.', 'kashing' ),
+                    'id'   => 'test_pkey',
+                    'type' => 'text',
+                    'visible' => array( 'test_mode', '!=', 'no' )
+                ),
+                // Live values
+                array(
+                    'name' => __( 'Live Merchant ID', 'kashing' ),
+                    'desc' => __( 'Enter your live Merchant ID.', 'kashing' ),
+                    'id'   => 'live_merchant_id',
+                    'type' => 'text',
+                    'visible' => array( 'test_mode', '=', 'no' )
+                ),
+                array(
+                    'name' => __( 'Live Secret Key', 'kashing' ),
+                    'desc' => __( 'Enter your live Kashing Secret Key.', 'kashing' ),
+                    'id'   => 'live_skey',
+                    'type' => 'text',
+                    'visible' => array( 'test_mode', '=', 'no' )
+                ),
+                array(
+                    'name' => __( 'Live Public Key', 'kashing' ),
+                    'desc' => __( 'Enter your live Kashing Public Key.', 'kashing' ),
+                    'id'   => 'live_pkey',
+                    'type' => 'text',
+                    'visible' => array( 'test_mode', '=', 'no' )
+                ),
+            ),
+            'validation' => array(
+                'rules'  => array(
+                    'merchant_id' => array(
+                        'required'  => true,
+                        'minlength' => 7,
+                    ),
+                ),
+                // Optional override of default error messages
+                'messages' => array(
+                    'api_key' => array(
+                        'required'  => __( 'API Key is required', 'kashing' ),
+                        'minlength' => __( 'Password must be at least 7 characters', 'kashing' ),
+                    ),
+                )
             )
         );
 
-        // Test Private Key
+        $meta_boxes[] = array(
+            'id'             => 'general',
+            'title'          => 'General',
+            'settings_pages' => 'kashing-settings',
+            'tab'            => 'general',
 
-        add_settings_field(
-            "test_private_key",
-            __( 'Test Private Key', 'kashing' ),
-            array( $this, "display_setting_field" ),
-            "kashing-core-page",
-            "kashing-core",
-            array(
-                'option_name' => 'test_private_key',
-                'field_type' => 'text'
-            )
+            'fields' => array(
+//                array(
+//                    'name' => __( 'Currency', 'kashing' ),
+//                    'type' => 'heading',
+//                ),
+                array(
+                    'name' => __( 'Choose Currency', 'kashing' ),
+                    'desc' => __( 'Choose a currency for your payments.', 'kashing' ),
+                    'id'   => 'currency',
+                    'type' => 'select_advanced',
+                    'options' => kashing_get_currencies_array()
+                ),
+                array(
+                    'name' => __( 'Return Page', 'kashing' ),
+                    'desc' => __( 'Choose the page your clients will be redirected to after the payment is completed.', 'kashing' ),
+                    'id'   => 'return_page',
+                    'type' => 'select_advanced',
+                    'options' => kashing_get_pages_array()
+                ),
+            ),
         );
 
-        // Test Merchant ID
-
-        add_settings_field(
-            "test_merchant_id",
-            __( 'Test Merchant ID', 'kashing' ),
-            array( $this, "display_setting_field" ),
-            "kashing-core-page",
-            "kashing-core",
-            array(
-                'option_name' => 'test_merchant_id',
-                'field_type' => 'text'
-            )
-        );
-
-        register_setting("kashing-core", "kashing_options" );
-
+        return $meta_boxes;
     }
-
-    /**
-     * Callback for a field type of Text
-     */
-
-    public function display_setting_field( $args ) {
-
-        // Get field type
-
-        if ( !array_key_exists( 'field_type', $args ) ) return null;
-        $field_type = $args[ 'field_type' ];
-
-        // Get options array
-
-        $option_array_name = Kashing_Settings::$opt_name; // Name of the general option array
-        $options = get_option( $option_array_name );
-
-        // Get field value
-
-        $field_value = '';
-
-        if ( array_key_exists( $args[ 'option_name' ], $options ) ) {
-            $field_value = $options[ $args[ 'option_name' ] ];
-        }
-
-        // Switch field types
-
-        switch ( $field_type ) {
-
-            case 'text' :
-
-                echo '<input type="text" name="' . esc_attr( $option_array_name ) . '[' . esc_attr( $args[ 'option_name' ] ) . ']" id="' . esc_attr( $args[ 'option_name' ] ) . '" value="' . esc_attr( $field_value ) . '" />';
-
-                break;
-
-            case 'select' :
-
-                echo 'lista rozwijalna... i mozna dodawac inne';
-
-                break;
-        }
-
-    }
-
 
 }
-
-//ZMIANA
 
 $kashing_settings = new Kashing_Settings();
 

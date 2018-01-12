@@ -1,134 +1,211 @@
 <?php
 
-class Kashing_Options {
+class Kashing_Settings {
+
+    public static $opt_name = 'kashing_options'; // ten array będzie wykorzystywany do opcji
+
+    /**
+     * Class Constructor.
+     */
 
     function __construct() {
 
-        // Add options page
+        // Add Plugin Options Array
 
-        add_filter( 'mb_settings_pages', array( $this, 'add_options_page' ) );
+        add_action( 'admin_init', array( $this, 'plugin_init_options' ) );
 
-        // Add options page fields
+        // Plugin Options
 
-        add_filter( 'rwmb_meta_boxes', array( $this, 'add_options_page_fields' ) );
+        add_action( 'admin_menu', array( $this, 'add_plugin_settings_page' ) );
+
+        // Define Plugin Setting Fields
+
+        add_action( 'admin_init', array( $this, 'add_plugin_setting_fields' ) );
 
     }
 
-    // Add Options Page
+    /**
+     * Initialize the plugin options array.
+     */
 
-    public function add_options_page() {
+    function plugin_init_options() {
 
-        $settings_pages[] = array(
-            'id'          => 'kashing-settings',
-            'option_name' => 'kashing',
-            'menu_title'  => __( 'Settings', 'kashing' ),
-            'icon_url'    => 'dashicons-edit',
-            'style'       => 'no-boxes',
-            'parent'      => 'edit.php?post_type=kashing',
-            'columns'     => 1,
-            'tabs'        => array(
-                'configuration' => __( 'Configuration', 'kashing' ),
-                'general'  => __( 'General', 'kashing' )
-            ),
-            'position'    => 68,
+        add_option( 'kashing_options' );
+
+    }
+
+    /**
+     * Register plugin settings page menu item.
+     */
+
+    public function add_plugin_settings_page() {
+
+        call_user_func(
+            'add_submenu_page',
+            'edit.php?post_type=kashing',
+            esc_html__( 'Settings', 'engage' ),
+            esc_html__( 'Settings', 'engage' ),
+            'manage_options',
+            'kashing-settings',
+            array( $this, 'settings_page_view' )
         );
 
-        return $settings_pages;
+    }
+
+    /**
+     * Plugin settings page view.
+     */
+
+    public function settings_page_view() { ?>
+
+        <div class="wrap">
+            <h1><?php esc_html_e( 'Kashing Payments', 'kashing' ); ?></h1>
+            <form method="post" action="options.php">
+                <?php
+
+                settings_fields("kashing-core" );
+
+                do_settings_sections("kashing-core-page" );
+
+                // Options Page Submit Button
+
+                submit_button();
+
+                ?>
+            </form>
+        </div>
+
+        <?php
 
     }
 
-    // Add option fields to Options Page
+//    public function add_plugin_setting_fields() {
+//
+////        $setting_section = array(
+////                'id' => 'kashing-core',
+////                ''
+////        );
+//
+//        $this->register_setting_fields();
+//
+//    }
 
-    public function add_options_page_fields( $meta_boxes ) {
+    /**
+     * Define Plugin Setting Fields
+     */
 
-        $meta_boxes[] = array(
-            'id'             => 'configuration',
-            'title'          => 'API',
-            'settings_pages' => 'kashing-settings',
-            'tab'            => 'configuration',
+    public function add_plugin_setting_fields() {
 
-            'fields' => array(
-                array(
-                    'name'    => __( 'Test Mode', 'kashing' ),
-                    'id'      => 'radio',
-                    'type'    => 'radio',
-                    'options' => array(
-                        'yes' => __( 'Yes', 'kashing' ),
-                        'no' => __( 'No', 'kashing' ),
-                    ),
-                    'std' => 'yes',
-                    'inline' => false,
-                ),
-                array(
-                    'name' => __( 'Merchant ID', 'kashing' ),
-                    'desc' => __( 'Your merchant ID.', 'kashing' ),
-                    'id'   => 'merchant_id',
-                    'type' => 'text',
-                ),
-                array(
-                    'name' => __( 'Secret Key', 'kashing' ),
-                    'desc' => __( 'Enter your Kashing Secret Key.', 'kashing' ),
-                    'id'   => 'skey',
-                    'type' => 'text',
-                ),
-                array(
-                    'name' => __( 'Public Key', 'kashing' ),
-                    'desc' => __( 'Enter your Kashing Public Key.', 'kashing' ),
-                    'id'   => 'pkey',
-                    'type' => 'text',
-                ),
-            ),
-            'validation' => array(
-                'rules'  => array(
-                    'api_key' => array(
-                        'required'  => true,
-                        'minlength' => 7,
-                    ),
-                ),
-                // Optional override of default error messages
-                'messages' => array(
-                    'api_key' => array(
-                        'required'  => __( 'API Key is required', 'kashing' ),
-                        'minlength' => __( 'Password must be at least 7 characters', 'kashing' ),
-                    ),
-                )
+        // Register settings
+
+        register_setting("kashing-core", "kashing_options" );
+
+        // Add settings section
+
+        add_settings_section(
+            "kashing-core",
+            __( "Core Settings", 'kashing' ),
+            null,
+            "kashing-core-page"
+        );
+
+        // Add setting fields
+
+        // Test Public Key
+
+        add_settings_field(
+            "test_public_key",
+            __( 'Test Public Key', 'kashing' ),
+            array( $this, "display_setting_field" ),
+            "kashing-core-page",
+            "kashing-core",
+            array(
+                'option_name' => 'test_public_key',
+                'field_type' => 'text',
+                'desc' => __( 'Opis', 'kashing' ), // Mozna dodać obsługę description pod inputem
+                'validate' => 'jakas_walidacja' // Mozna przekazac w argumencie ze ma byc jakas walidacja danych tutaj wpisanych
             )
         );
 
-        $meta_boxes[] = array(
-            'id'             => 'general',
-            'title'          => 'General',
-            'settings_pages' => 'kashing-settings',
-            'tab'            => 'general',
+        // Test Private Key
 
-            'fields' => array(
-                array(
-                    'name' => __( 'Currency', 'kashing' ),
-                    'type' => 'heading',
-                ),
-                array(
-                    'name' => __( 'Choose Currency', 'kashing' ),
-                    'desc' => __( 'Choose a currency for your payments.', 'kashing' ),
-                    'id'   => 'currency',
-                    'type' => 'select_advanced',
-                    'options' => kashing_get_currencies_array()
-                ),
-                array(
-                    'name' => __( 'Return Page', 'kashing' ),
-                    'desc' => __( 'Choose the page your clients will be redirected to after the payment is completed.', 'kashing' ),
-                    'id'   => 'return_page',
-                    'type' => 'select_advanced',
-                    'options' => kashing_get_pages_array()
-                ),
-            ),
+        add_settings_field(
+            "test_private_key",
+            __( 'Test Private Key', 'kashing' ),
+            array( $this, "display_setting_field" ),
+            "kashing-core-page",
+            "kashing-core",
+            array(
+                'option_name' => 'test_private_key',
+                'field_type' => 'text'
+            )
         );
 
-        return $meta_boxes;
+        // Test Merchant ID
+
+        add_settings_field(
+            "test_merchant_id",
+            __( 'Test Merchant ID', 'kashing' ),
+            array( $this, "display_setting_field" ),
+            "kashing-core-page",
+            "kashing-core",
+            array(
+                'option_name' => 'test_merchant_id',
+                'field_type' => 'text'
+            )
+        );
+
     }
+
+    /**
+     * Callback for a field type of Text
+     */
+
+    public function display_setting_field( $args ) {
+
+        // Get field type
+
+        if ( !array_key_exists( 'field_type', $args ) ) return null;
+        $field_type = $args[ 'field_type' ];
+
+        // Get options array
+
+        $option_array_name = Kashing_Settings::$opt_name; // Name of the general option array
+        $options = get_option( $option_array_name );
+
+        // Get field value
+
+        $field_value = '';
+
+        if ( array_key_exists( $args[ 'option_name' ], $options ) ) {
+            $field_value = $options[ $args[ 'option_name' ] ];
+        }
+
+        // Switch field types
+
+        switch ( $field_type ) {
+
+            case 'text' :
+
+                echo '<input type="text" name="' . esc_attr( $option_array_name ) . '[' . esc_attr( $args[ 'option_name' ] ) . ']" id="' . esc_attr( $args[ 'option_name' ] ) . '" value="' . esc_attr( $field_value ) . '" />';
+
+                break;
+
+            case 'select' :
+
+                echo 'lista rozwijalna... i mozna dodawac inne';
+
+                break;
+        }
+
+    }
+
 
 }
 
-$kashing_option = new Kashing_Options();
+//ZMIANA
+
+$kashing_settings = new Kashing_Settings();
 
 function kashing_get_currencies_array() {
 
