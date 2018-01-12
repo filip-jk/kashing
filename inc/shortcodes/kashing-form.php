@@ -29,50 +29,75 @@ if ( !function_exists( 'kashing_form_shortcode' ) ) {
 
         ?>
 
-        <form class="kashing-form">
+        <form class="kashing-form" id="kashing-form-id">
 
             <div class="input-holder">
                 <label for="kashing-firstname"><?php esc_html_e( 'First Name', 'kashing' ); ?></label>
-                <input type="text" name="firstname" id="kashing-firstname" class="kashing-required-field" value="Ten">
+                <input type="text" name="firstname" id="kashing-firstname" class="kashing-required-field" value="Ten"
+                       required data-validation='{
+                       "required" : true,
+                       "minlength" : 1
+                       }'>
             </div>
 
             <div class="input-holder">
                 <label for="kashing-lastname"><?php esc_html_e( 'Last Name', 'kashing' ); ?></label>
-                <input type="text" name="lastname" id="kashing-lastname" class="kashing-required-field" value="Green">
+                <input type="text" name="lastname" id="kashing-lastname" class="kashing-required-field" value="Green"
+                       required data-validation='{
+                       "required" : true,
+                       "minlength" : 1
+                       }'>
             </div>
 
             <div class="input-holder">
                 <label for="kashing-address1"><?php esc_html_e( 'Address 1', 'kashing' ); ?></label>
-                <input type="text" name="address1" id="kashing-address1" class="kashing-required-field" value="Flat 6 Primrose Rise">
+                <input type="text" name="address1" id="kashing-address1" class="kashing-required-field" value="Flat 6 Primrose Rise"
+                       required data-validation='{
+                       "required" : true,
+                       "minlength" : 1
+                       }'>
             </div>
 
-            <?php
-
-            // Check if the address2 field is enabled in the form meta options.
-
-            if ( get_post_meta( $form_id, $prefix . 'address2', true ) == true ) {
-
-            ?>
+<!--            --><?php
+//
+//            // Check if the address2 field is enabled in the form meta options.
+//
+//            if ( get_post_meta( $form_id, $prefix . 'address2', true ) == true ) {
+//
+//            ?>
 
             <div class="input-holder">
                 <label for="kashing-address2"><?php esc_html_e( 'Address 2', 'kashing' ); ?></label>
-                <input type="text" name="address2" id="kashing-address2" value>
+                <input type="text" name="address2" id="kashing-address2" value
+                       required data-validation='{
+                       "required" : true,
+                       "minlength" : 1
+                       }'>
             </div>
 
-            <?php
-
-            } // End address2 field check
-
-            ?>
+<!--            --><?php
+//
+//            } // End address2 field check
+//
+//            ?>
 
             <div class="input-holder">
                 <label for="kashing-city"><?php esc_html_e( 'City', 'kashing' ); ?></label>
-                <input type="text" name="city" id="kashing-city" class="kashing-required-field" value="Northampton">
+                <input type="text" name="city" id="kashing-city" class="kashing-required-field" value="Northampton"
+                       required data-validation='{
+                       "required" : true,
+                       "minlength" : 1
+                       }'>
             </div>
 
             <div class="input-holder">
                 <label for="kashing-postcode"><?php esc_html_e( 'Post Code', 'kashing' ); ?></label>
-                <input type="text" name="postcode" id="kashing-postcode" class="kashing-required-field" value="12-123">
+                <input type="text" name="postcode" id="kashing-postcode" class="kashing-required-field" value="12-123"
+                       required data-validation='{
+                       "required" : true,
+                       "minlength" : 1,
+                       "type" : "postcode"
+                       }'>
             </div>
 
             <div class="input-holder">
