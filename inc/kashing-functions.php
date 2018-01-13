@@ -9,7 +9,7 @@
 if ( !function_exists( 'kashing_option' ) ) {
     function kashing_option( $option_name ) {
 
-        $options = get_option( 'kashing_options' );
+        $options = get_option( 'kashing' );
 
         if ( is_array( $options ) && array_key_exists( $option_name, $options ) ) {
             return $options[ $option_name ]; // Each option has a prefix

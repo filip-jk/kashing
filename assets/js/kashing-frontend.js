@@ -30,7 +30,10 @@
                         address1 : $( '#kashing-address1' ).val(),
                         city : $( '#kashing-city' ).val(),
                         postcode : $( '#kashing-postcode' ).val(),
-                        country : $( '#kashing-country' ).val()
+                        country : $( '#kashing-country' ).val(),
+                        phone: $( '#kashing-phone' ).val(),
+                        email: $( '#kashing-email' ).val(),
+                        address2: $( '#kashing-email' ).val()
                     },
                     success: function ( resp ) {
 

@@ -45,41 +45,70 @@ class Kashing_Metaboxes {
             'autosave' => false,
             'fields' => array(
                 array(
-                    'id' => $prefix . 'amount',
-                    'type' => 'text',
-                    'name' => esc_html__( 'Amount', 'kashing' ),
-                    'desc' => esc_html__( 'Dodatkowy opis', 'kashing' ),
+                    'type' => 'heading',
+                    'name' => __( 'General', 'kashing' ),
                 ),
                 array(
-                    'id' => $prefix . 'name',
-                    'name' => esc_html__( 'Name', 'kashing' ),
-                    'type' => 'checkbox',
-                    'std' => true,
+                    'name' => __( 'Amount', 'kashing' ),
+                    'desc' => __( 'Enter the form amount that will be processed with the payment system.', 'kashing' ),
+                    'id' => $prefix . 'amount',
+                    'type' => 'number',
+                    'step' => 'any',
+                    'std' => '1.00'
+                ),
+                array(
+                    'name' => __( 'Description', 'kashing' ),
+                    'desc' => __( 'The form transaction description.', 'kashing' ),
+                    'id' => $prefix . 'desc',
+                    'type' => 'textarea'
+                ),
+                array(
+                    'type' => 'heading',
+                    'name' => __( 'Form Fields', 'kashing' ),
+                    'desc' => __( 'Configure the form fields. You may disable fields that are not required by the system.', 'kashing' )
                 ),
                 array(
                     'id' => $prefix . 'last_name',
-                    'name' => esc_html__( 'Last Name', 'kashing' ),
+                    'name' => __( 'Last Name', 'kashing' ),
+                    'desc' => __( 'Enable the "Last Name" field.', 'kashing' ),
                     'type' => 'checkbox',
                     'std' => true,
                 ),
                 array(
-                    'id' => $prefix . 'address1',
-                    'name' => esc_html__( 'Address 1', 'kashing' ),
+                    'id' => $prefix . 'address2',
+                    'name' => __( 'Address 2', 'kashing' ),
+                    'desc' => __( 'Enable the "Address 2" field.', 'kashing' ),
                     'type' => 'checkbox',
                 ),
+                array(
+                    'id' => $prefix . 'email',
+                    'name' => __( 'Email', 'kashing' ),
+                    'desc' => __( 'Enable the "Email" field.', 'kashing' ),
+                    'type' => 'checkbox',
+                ),
+                array(
+                    'id' => $prefix . 'phone',
+                    'name' => __( 'Phone', 'kashing' ),
+                    'desc' => __( 'Enable the "Phone" field.', 'kashing' ),
+                    'type' => 'checkbox'
+                )
             ),
             'validation' => array(
                 'rules'  => array(
                     $prefix . 'amount' => array(
                         'required'  => true,
-                        'minlength' => 1,
+                        'maxlength' => 20,
+                        'number' => true
+                    ),
+                    $prefix . 'desc' => array(
+                        'required'  => true,
+                        'maxlength' => 500
                     ),
                 ),
                 // Optional override of default error messages
                 'messages' => array(
                     $prefix . 'amount' => array(
-                        'required'  => 'API Key is required',
-                        'minlength' => 'Password must be at least 7 characters',
+                        'required'  => __( 'Form amount is required', 'kashing' )
                     ),
                 )
             )

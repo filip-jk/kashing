@@ -79,7 +79,7 @@ class Kashing_Ajax {
 
         if ( isset( $_REQUEST[ 'form_id' ] ) ) {
 
-            $form_id = $_REQUEST[ 'form_id'];
+            $form_id = $_REQUEST[ 'form_id' ];
 
             // Check if form with a given ID exists:
 
@@ -95,8 +95,8 @@ class Kashing_Ajax {
 
         // Required form fields (client input)
 
-        $required_form_fields = array( 'firstname', 'lastname', 'address1', 'city', 'postcode', 'country' );
-        $firstname = $lastname = $address1 = $city = $postcode = $country = '';
+        $required_form_fields = array( 'firstname', 'address1', 'city', 'postcode', 'country' );
+        $firstname = $address1 = $city = $postcode = $country = '';
 
         $missing_fields = array(); // Store missing fields
 
@@ -109,6 +109,10 @@ class Kashing_Ajax {
                 ${ $form_field_name } = $_REQUEST[ $form_field_name ]; // Tworzymy zmienną np. el z tablicy 'firstname' zamieniamy na $firstname
             }
         }
+
+        $text = '';
+        $text = esc_attr( $text );
+        // echo : Bla
 
         // If missing fields:
 
@@ -127,18 +131,10 @@ class Kashing_Ajax {
 
         if ( $merchant_id == null ) {
             // Jakieś sprawdzenie wcześniejsze trzeba dodać tj. jeżeli merchant_id nie jest ustawiony w opcjach wtyczki to żeby od razu szedł error, a nie błędne zapytanie było wysyłane do API Kashingu
+            $merchant_id = '207';
         }
 
-        // Demo data
-
-//        $firstname = 'Ten';
-//        $lastname = 'Green';
-//        $address1 = 'Flat 6 Primrose Rise';
-//        $city = 'Northampton';
-//        $postcode = '12-123';
-//        $country = 'UK';
-        // $amount = 100;
-        // $currency = "GBP";
+        $merchant_id = '207';
 
         // Transaction Amount
 
@@ -150,24 +146,61 @@ class Kashing_Ajax {
 
         $currency = kashing_get_currency();
 
+        // Return URL
+
+        if ( kashing_option( 'return_page' ) != '' && get_post_status( kashing_option( 'return_page' ) ) ) {
+            $return_url = get_permalink( kashing_option( 'return_page' ) );
+        } else {
+            $return_url = get_permalink( $form_id ); // If no return page found, we need to redirect somewhere else.
+        }
+
+        // Description
+
+        $description = __( "No description", 'kashing' );
+
+        if ( get_post_meta( $form_id, Kashing_Payments::$data_prefix . 'desc', true ) ) {
+            $description = get_post_meta( $form_id, Kashing_Payments::$data_prefix . 'desc', true );
+        }
+
         // Array with transaction data
 
         $transaction_data = array(
             'merchantid' => $merchant_id,
             'amount' => $amount,
             'currency' => $currency,
-            'returnurl' => 'http://veented.com',
+            'returnurl' => esc_url( $return_url ),
             "ip" => "192.168.0.111",
             "forwardedip" => "80.177.11.240",
             "merchanturl" => "shop.test.co.uk",
-            "description" => "test description",
-            "firstname" => $firstname, // Form
-            "lastname" => $lastname, // Form
-            "address1" => $address1, // Form
-            "city" => $city,
-            "postcode" => $postcode,
-            "country" => $country
+            "description" => esc_textarea( $description ),
+            "firstname" => esc_textarea( $firstname ), // Form
+            "address1" => esc_textarea( $address1 ), // Form
+            "city" => esc_html( $city ),
+            "postcode" => esc_html( $postcode ),
+            "country" => esc_html( $country )
         );
+
+        // Optional fields
+
+        // Address 2
+
+        $optional_field_names = array( 'address2', 'lastname', 'phone', 'email' );
+        $optional_fields = array();
+
+        foreach( $optional_field_names as $field_name ) {
+            if ( $_REQUEST[ $field_name ] != '' ) {
+                $optional_fields[ $field_name ] = $_REQUEST[ $field_name ];
+            }
+        }
+
+        // If any optional field was typed, make a merge with the $transaction_data
+
+        if ( !empty( $optional_fields ) ) {
+            $transaction_data = array_merge(
+                $transaction_data,
+                $optional_fields
+            );
+        }
 
         // Get the transaction psign
 
@@ -189,6 +222,7 @@ class Kashing_Ajax {
         // Encode the final transaction array to JSON
 
         $body = json_encode( $final_transaction_array );
+        //wp_send_json_error( $final_transaction_array ); // See the entire call body
 
         // Make the API Call
 
@@ -297,7 +331,15 @@ class Kashing_Ajax {
     public function get_transaction_amount( $form_id ) {
 
         if ( get_post_meta( $form_id, Kashing_Payments::$data_prefix . 'amount', true ) != '' ) {
-            return get_post_meta( $form_id, Kashing_Payments::$data_prefix . 'amount', true );
+            $amount = get_post_meta( $form_id, Kashing_Payments::$data_prefix . 'amount', true );
+
+            if ( is_int( $amount ) ) {
+                $amount = $amount*100; // User typed 100 and expects it to be $100 and not $1.00
+                return $amount;
+            } elseif ( is_numeric( $amount ) ) {
+                return $amount;
+            }
+
         }
 
         return false;

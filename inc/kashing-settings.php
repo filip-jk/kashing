@@ -37,7 +37,7 @@ class Kashing_Settings {
                 'configuration' => __( 'Configuration', 'kashing' ),
                 'general'  => __( 'General', 'kashing' )
             ),
-            'position'    => 68,
+            'position'    => 68
         );
 
         return $settings_pages;
@@ -133,29 +133,31 @@ class Kashing_Settings {
             )
         );
 
+        // Get the Kashing Currency Object
+
+        $currency = new Kashing_Currency();
+
         $meta_boxes[] = array(
             'id'             => 'general',
             'title'          => 'General',
             'settings_pages' => 'kashing-settings',
             'tab'            => 'general',
-
             'fields' => array(
-//                array(
-//                    'name' => __( 'Currency', 'kashing' ),
-//                    'type' => 'heading',
-//                ),
                 array(
                     'name' => __( 'Choose Currency', 'kashing' ),
                     'desc' => __( 'Choose a currency for your payments.', 'kashing' ),
                     'id'   => 'currency',
                     'type' => 'select_advanced',
-                    'options' => kashing_get_currencies_array()
+                    'allowClear' => false,
+                    'std' => 'GBP',
+                    'options' => $currency->get_all()
                 ),
                 array(
                     'name' => __( 'Return Page', 'kashing' ),
                     'desc' => __( 'Choose the page your clients will be redirected to after the payment is completed.', 'kashing' ),
                     'id'   => 'return_page',
                     'type' => 'select_advanced',
+                    'allowClear' => false,
                     'options' => kashing_get_pages_array()
                 ),
             ),
@@ -167,17 +169,6 @@ class Kashing_Settings {
 }
 
 $kashing_settings = new Kashing_Settings();
-
-function kashing_get_currencies_array() {
-
-    $currencies = array(
-        'GBP'   => 'GBP',
-        'USD'   => 'USD'
-    );
-
-    return $currencies;
-
-}
 
 /**
  * Retrieve an array of all pages.

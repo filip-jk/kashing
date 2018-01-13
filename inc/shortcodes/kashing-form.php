@@ -29,7 +29,7 @@ if ( !function_exists( 'kashing_form_shortcode' ) ) {
 
         ?>
 
-        <form class="kashing-form" id="kashing-form-id">
+        <form class="kashing-form">
 
             <div class="input-holder">
                 <label for="kashing-firstname"><?php esc_html_e( 'First Name', 'kashing' ); ?></label>
@@ -58,13 +58,13 @@ if ( !function_exists( 'kashing_form_shortcode' ) ) {
                        }'>
             </div>
 
-<!--            --><?php
-//
-//            // Check if the address2 field is enabled in the form meta options.
-//
-//            if ( get_post_meta( $form_id, $prefix . 'address2', true ) == true ) {
-//
-//            ?>
+            <?php
+
+            // Check if the address2 field is enabled in the form meta options.
+
+            if ( get_post_meta( $form_id, $prefix . 'address2', true ) == true ) {
+
+            ?>
 
             <div class="input-holder">
                 <label for="kashing-address2"><?php esc_html_e( 'Address 2', 'kashing' ); ?></label>
@@ -75,11 +75,49 @@ if ( !function_exists( 'kashing_form_shortcode' ) ) {
                        }'>
             </div>
 
-<!--            --><?php
-//
-//            } // End address2 field check
-//
-//            ?>
+            <?php
+
+            } // End address2 field check
+
+            // Check if the address2 field is enabled in the form meta options.
+
+            if ( get_post_meta( $form_id, $prefix . 'email', true ) == true ) {
+
+                ?>
+
+                <div class="input-holder">
+                    <label for="kashing-address2"><?php esc_html_e( 'Email', 'kashing' ); ?></label>
+                    <input type="text" name="email" id="kashing-email" value
+                           required data-validation='{
+                       "required" : true,
+                       "minlength" : 1
+                       }'>
+                </div>
+
+                <?php
+
+            } // End address2 field check
+
+            // Check if the address2 field is enabled in the form meta options.
+
+            if ( get_post_meta( $form_id, $prefix . 'phone', true ) == true ) {
+
+                ?>
+
+                <div class="input-holder">
+                    <label for="kashing-address2"><?php esc_html_e( 'Phone', 'kashing' ); ?></label>
+                    <input type="text" name="phone" id="kashing-phone" value
+                           required data-validation='{
+                       "required" : true,
+                       "minlength" : 1
+                       }'>
+                </div>
+
+                <?php
+
+            } // End address2 field check
+
+            ?>
 
             <div class="input-holder">
                 <label for="kashing-city"><?php esc_html_e( 'City', 'kashing' ); ?></label>
