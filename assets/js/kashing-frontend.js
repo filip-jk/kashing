@@ -42,7 +42,7 @@
 
                             var response = JSON.parse( resp.data );
 
-                            console.log( response );
+                            //console.log( response );
 
                             // Check response type and proceed accordingly
 
@@ -55,7 +55,7 @@
                             // this "error" case means the ajax call, itself, succeeded, but the function
                             // called returned an error condition
                             alert ( 'Error: ' ) ;
-                            console.log( resp );
+                            //console.log( resp );
                         }
                     },
                     error: function (xhr, ajaxOptions, thrownError) {

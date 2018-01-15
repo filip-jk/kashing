@@ -135,6 +135,7 @@ class Kashing_Payments {
 
         wp_enqueue_style( 'kashing-admin', plugin_dir_url( __FILE__ ) . 'assets/css/kashing-admin.css' );
         wp_enqueue_script( 'kashing-backend-js', plugin_dir_url( __FILE__ ) . 'assets/js/kashing-backend.js', array( 'jquery' ) );
+	    wp_enqueue_script( 'kashing-metaboxes-js', plugin_dir_url( __FILE__ ) . 'assets/js/kashing-metaboxes.js', array( 'jquery' ) );
 
         wp_localize_script(
             'kashing-backend-js',

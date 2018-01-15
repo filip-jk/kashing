@@ -1,5 +1,22 @@
 <?php
 
+if ( class_exists( 'RWMB_Field' ) ) {
+
+	class RWMB_Amount_Field extends RWMB_Field {
+
+
+		public static function html( $meta, $field ) {
+			return sprintf(
+				'<input type="number" name="%s" id="%s" value="%s" pattern="[0-9]+([\.,][0-9]+)?">',
+				$field['field_name'],
+				$field['id'],
+				$meta
+			);
+		}
+
+	}
+}
+
 class Kashing_Metaboxes {
 
     /**
@@ -52,9 +69,7 @@ class Kashing_Metaboxes {
                     'name' => __( 'Amount', 'kashing' ),
                     'desc' => __( 'Enter the form amount that will be processed with the payment system.', 'kashing' ),
                     'id' => $prefix . 'amount',
-                    'type' => 'number',
-                    'step' => 'any',
-                    'std' => '1.00'
+                    'type' => 'text'
                 ),
                 array(
                     'name' => __( 'Description', 'kashing' ),
