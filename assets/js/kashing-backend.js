@@ -14,7 +14,7 @@
                 type: 'POST',
                 dataType: 'JSON',
                 data: {
-                    action: 'call_post_types_ajax'
+                    action: 'call_get_kashing_forms'
                 },
                 success: function ( resp ) {
 

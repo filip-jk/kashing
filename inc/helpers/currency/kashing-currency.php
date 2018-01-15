@@ -15,12 +15,12 @@ class Kashing_Currency {
         $this->init_currency_symbols();
         $this->init_currencies();
 
-        $this->currency_data_path = KASHING_PATH . 'inc/helpers/currency-misc/';
+        $this->currency_data_path = KASHING_PATH . 'inc/helpers/currency/currency-misc/';
 
     }
 
     /**
-     * Get all currencies.
+     * Get all currency.
      *
      * @return array
      */
@@ -80,14 +80,14 @@ class Kashing_Currency {
     }
 
     /**
-     * Assign currency array to the $currencies variable.
+     * Assign currency array to the $currency variable.
      *
      * @return void
      */
 
     function init_currencies() {
 
-        $file = KASHING_PATH . 'inc/helpers/currency-misc/currency-list.php'; // A full list of currencies
+        $file = KASHING_PATH . 'inc/helpers/currency/currency-misc/currency-list.php'; // A full list of currency
 
         if ( is_file( $file ) ) {
 
@@ -131,7 +131,7 @@ class Kashing_Currency {
 
     function init_currency_symbols() {
 
-        $file = KASHING_PATH . 'inc/helpers/currency-misc/currency-symbols.php'; // A full list of currencies
+        $file = KASHING_PATH . 'inc/helpers/currency/currency-misc/currency-symbols.php'; // A full list of currency
 
         if ( is_file( $file ) ) {
 

@@ -8,7 +8,7 @@
  */
 
 return array(
-    'GBP' => array('British Pounds Sterling', '826'),
+    'GBP' => array( __( 'British Pounds Sterling', 'kashing' ), '826'),
     'USD' => array('United States Dollars', '840'),
     'AFA' => array('Afghan Afghani', '971'),
     'AWG' => array('Aruban Florin', '533'),

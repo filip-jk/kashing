@@ -25,69 +25,42 @@ if ( !function_exists( 'kashing_form_shortcode' ) ) {
 
         $prefix = Kashing_Payments::$data_prefix;
 
-        ob_start(); // We can use HTML directly thanks to this
+        // Shortcode output
 
-        ?>
+        ob_start();
 
-        <form class="kashing-form">
+        global $kashing_configuration_errors;
 
-            <div class="input-holder">
-                <label for="kashing-firstname"><?php esc_html_e( 'First Name', 'kashing' ); ?></label>
-                <input type="text" name="firstname" id="kashing-firstname" class="kashing-required-field" value="Ten"
-                       required data-validation='{
-                       "required" : true,
-                       "minlength" : 1
-                       }'>
-            </div>
-
-            <div class="input-holder">
-                <label for="kashing-lastname"><?php esc_html_e( 'Last Name', 'kashing' ); ?></label>
-                <input type="text" name="lastname" id="kashing-lastname" class="kashing-required-field" value="Green"
-                       required data-validation='{
-                       "required" : true,
-                       "minlength" : 1
-                       }'>
-            </div>
-
-            <div class="input-holder">
-                <label for="kashing-address1"><?php esc_html_e( 'Address 1', 'kashing' ); ?></label>
-                <input type="text" name="address1" id="kashing-address1" class="kashing-required-field" value="Flat 6 Primrose Rise"
-                       required data-validation='{
-                       "required" : true,
-                       "minlength" : 1
-                       }'>
-            </div>
-
-            <?php
-
-            // Check if the address2 field is enabled in the form meta options.
-
-            if ( get_post_meta( $form_id, $prefix . 'address2', true ) == true ) {
+        if ( $kashing_configuration_errors != true && $form_id != '' ) { // There are no configuration errors, display the form.
 
             ?>
 
-            <div class="input-holder">
-                <label for="kashing-address2"><?php esc_html_e( 'Address 2', 'kashing' ); ?></label>
-                <input type="text" name="address2" id="kashing-address2" value
-                       required data-validation='{
+            <form class="kashing-form">
+
+                <div class="input-holder">
+                    <label for="kashing-firstname"><?php esc_html_e('First Name', 'kashing'); ?></label>
+                    <input type="text" name="firstname" id="kashing-firstname" class="kashing-required-field"
+                           value="Ten"
+                           required data-validation='{
                        "required" : true,
                        "minlength" : 1
                        }'>
-            </div>
-
-            <?php
-
-            } // End address2 field check
-
-            // Check if the address2 field is enabled in the form meta options.
-
-            if ( get_post_meta( $form_id, $prefix . 'email', true ) == true ) {
-
-                ?>
+                </div>
 
                 <div class="input-holder">
-                    <label for="kashing-address2"><?php esc_html_e( 'Email', 'kashing' ); ?></label>
-                    <input type="text" name="email" id="kashing-email" value
+                    <label for="kashing-lastname"><?php esc_html_e('Last Name', 'kashing'); ?></label>
+                    <input type="text" name="lastname" id="kashing-lastname" class="kashing-required-field"
+                           value="Green"
+                           required data-validation='{
+                       "required" : true,
+                       "minlength" : 1
+                       }'>
+                </div>
+
+                <div class="input-holder">
+                    <label for="kashing-address1"><?php esc_html_e('Address 1', 'kashing'); ?></label>
+                    <input type="text" name="address1" id="kashing-address1" class="kashing-required-field"
+                           value="Flat 6 Primrose Rise"
                            required data-validation='{
                        "required" : true,
                        "minlength" : 1
@@ -96,77 +69,127 @@ if ( !function_exists( 'kashing_form_shortcode' ) ) {
 
                 <?php
 
-            } // End address2 field check
+                // Check if the address2 field is enabled in the form meta options.
 
-            // Check if the address2 field is enabled in the form meta options.
+                if (get_post_meta($form_id, $prefix . 'address2', true) == true) {
 
-            if ( get_post_meta( $form_id, $prefix . 'phone', true ) == true ) {
+                    ?>
+
+                    <div class="input-holder">
+                        <label for="kashing-address2"><?php esc_html_e('Address 2', 'kashing'); ?></label>
+                        <input type="text" name="address2" id="kashing-address2" value
+                               required data-validation='{
+                       "required" : true,
+                       "minlength" : 1
+                       }'>
+                    </div>
+
+                    <?php
+
+                } // End address2 field check
+
+                // Check if the address2 field is enabled in the form meta options.
+
+                if (get_post_meta($form_id, $prefix . 'email', true) == true) {
+
+                    ?>
+
+                    <div class="input-holder">
+                        <label for="kashing-address2"><?php esc_html_e('Email', 'kashing'); ?></label>
+                        <input type="text" name="email" id="kashing-email" value
+                               required data-validation='{
+                       "required" : true,
+                       "minlength" : 1
+                       }'>
+                    </div>
+
+                    <?php
+
+                } // End address2 field check
+
+                // Check if the address2 field is enabled in the form meta options.
+
+                if (get_post_meta($form_id, $prefix . 'phone', true) == true) {
+
+                    ?>
+
+                    <div class="input-holder">
+                        <label for="kashing-address2"><?php esc_html_e('Phone', 'kashing'); ?></label>
+                        <input type="text" name="phone" id="kashing-phone" value
+                               required data-validation='{
+                       "required" : true,
+                       "minlength" : 1
+                       }'>
+                    </div>
+
+                    <?php
+
+                } // End address2 field check
 
                 ?>
 
                 <div class="input-holder">
-                    <label for="kashing-address2"><?php esc_html_e( 'Phone', 'kashing' ); ?></label>
-                    <input type="text" name="phone" id="kashing-phone" value
+                    <label for="kashing-city"><?php esc_html_e('City', 'kashing'); ?></label>
+                    <input type="text" name="city" id="kashing-city" class="kashing-required-field" value="Northampton"
                            required data-validation='{
                        "required" : true,
                        "minlength" : 1
                        }'>
                 </div>
 
-                <?php
-
-            } // End address2 field check
-
-            ?>
-
-            <div class="input-holder">
-                <label for="kashing-city"><?php esc_html_e( 'City', 'kashing' ); ?></label>
-                <input type="text" name="city" id="kashing-city" class="kashing-required-field" value="Northampton"
-                       required data-validation='{
-                       "required" : true,
-                       "minlength" : 1
-                       }'>
-            </div>
-
-            <div class="input-holder">
-                <label for="kashing-postcode"><?php esc_html_e( 'Post Code', 'kashing' ); ?></label>
-                <input type="text" name="postcode" id="kashing-postcode" class="kashing-required-field" value="12-123"
-                       required data-validation='{
+                <div class="input-holder">
+                    <label for="kashing-postcode"><?php esc_html_e('Post Code', 'kashing'); ?></label>
+                    <input type="text" name="postcode" id="kashing-postcode" class="kashing-required-field"
+                           value="12-123"
+                           required data-validation='{
                        "required" : true,
                        "minlength" : 1,
                        "type" : "postcode"
                        }'>
-            </div>
+                </div>
 
-            <div class="input-holder">
-                <label for="kashing-country"><?php esc_html_e( 'Country', 'kashing' ); ?></label>
-                <select name="country" id="kashing-country" class="kashing-required-field" >
-                    <?php
+                <div class="input-holder">
+                    <label for="kashing-country"><?php esc_html_e( 'Country', 'kashing' ); ?></label>
+                    <select name="country" id="kashing-country" class="kashing-required-field" >
+                        <?php
 
-                    $kashing_countries = new Kashing_Countries();
+                        $kashing_countries = new Kashing_Countries();
 
-                    $countries = $kashing_countries->get_all();
+                        $countries = $kashing_countries->get_all();
 
 
-                    foreach( $countries as $country_code => $country_name ) {
-                        if($country_code === 'UK') {
-	                        echo '<option value="' . esc_attr( $country_code ) . '" selected >' . esc_html( $country_name ) . '</option>';
-                        } else {
-	                        echo '<option value="' . esc_attr( $country_code ) . '">' . esc_html( $country_name ) . '</option>';
+                        foreach( $countries as $country_code => $country_name ) {
+                            if($country_code === 'UK') {
+                                echo '<option value="' . esc_attr( $country_code ) . '" selected >' . esc_html( $country_name ) . '</option>';
+                            } else {
+                                echo '<option value="' . esc_attr( $country_code ) . '">' . esc_html( $country_name ) . '</option>';
+                            }
                         }
-                    }
-                    
-                    ?>
-                </select>
-            </div>
 
-            <input type="hidden" id="kashing-form-id" value="<?php echo esc_attr( $form_id ); ?>">
+                        ?>
+                    </select>
+                </div>
 
-            <button class="button btn" id="kashing-pay" type="button"><?php esc_html_e('Pay with Kashing', 'kashing' ); ?></button>
+                <input type="hidden" id="kashing-form-id" value="<?php echo esc_attr($form_id); ?>">
 
-        </form>
+                <button class="button btn" id="kashing-pay"
+                        type="button"><?php esc_html_e('Pay with Kashing', 'kashing'); ?></button>
 
-        <?php
+            </form>
+
+            <?php
+
+        } else {
+
+            echo 'There are errors:';
+
+            $kashing_api = new Kashing_API();
+
+            echo '<pre>';
+            var_dump( $kashing_api->errors );
+            echo '</pre>';
+
+        }
 
         $content = ob_get_contents(); // End content "capture" and store it into a variable.
         ob_end_clean();

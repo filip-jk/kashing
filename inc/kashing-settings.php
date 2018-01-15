@@ -153,9 +153,17 @@ class Kashing_Settings {
                     'options' => $currency->get_all()
                 ),
                 array(
-                    'name' => __( 'Return Page', 'kashing' ),
-                    'desc' => __( 'Choose the page your clients will be redirected to after the payment is completed.', 'kashing' ),
-                    'id'   => 'return_page',
+                    'name' => __( 'Success Page', 'kashing' ),
+                    'desc' => __( 'Choose the page your clients will be redirected to after the payment is successful.', 'kashing' ),
+                    'id'   => 'success_page',
+                    'type' => 'select_advanced',
+                    'allowClear' => false,
+                    'options' => kashing_get_pages_array()
+                ),
+                array(
+                    'name' => __( 'Failure Page', 'kashing' ),
+                    'desc' => __( 'Choose the page your clients will be redirected to after the payment failed.', 'kashing' ),
+                    'id'   => 'failure_page',
                     'type' => 'select_advanced',
                     'allowClear' => false,
                     'options' => kashing_get_pages_array()

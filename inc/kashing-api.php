@@ -1,79 +1,214 @@
 <?php
 
-class Kashing_Ajax {
+class Kashing_API {
+
+    /**
+     * Detect whether the Test Mode is enabled.
+     *
+     * @var bool
+     */
+
+    public $test_mode = true;
+
+    /**
+     * The API secret key.
+     *
+     * @var string
+     */
 
     public $secret_key;
+
+    /**
+     * The API public key.
+     *
+     * @var string
+     */
+
     public $public_key;
+
+    /**
+     * Merchant ID.
+     *
+     * @var string
+     */
+
+    public $merchant_id;
+
+    /**
+     * The API URL.
+     *
+     * @var string
+     */
+
     public $api_url;
-    public $prefix;
+
+    /**
+     * Errors boolean.
+     *
+     * @var boolean
+     */
+
+    public $has_errors = false;
+
+    /**
+     * Errors array.
+     *
+     * @var array
+     */
+
+    public $errors = array();
+
+    /**
+     * Class constructor.
+     */
 
     function __construct() {
 
-        add_action( 'wp_ajax_call_kashing_ajax', array( $this, 'ajax_process' ) );
-        add_action( 'wp_ajax_nopriv_call_kashing_ajax', array( $this, 'ajax_process' ) );
+        // The main transaction API call
 
-        //shortcodes
-        add_action( 'wp_ajax_call_post_types_ajax',  array($this, 'get_post_types')  );
-        add_action( 'wp_ajax_nopriv_call_post_types_ajax', array($this, 'get_post_types')  );
+        add_action( 'wp_ajax_call_kashing_post_transaction', array( $this, 'ajax_api_process_transaction' ) );
+        add_action( 'wp_ajax_nopriv_call_kashing_post_transaction', array( $this, 'ajax_api_process_transaction' ) );
 
-        // Keys
+        // Determine the Test Mode
 
-        $this->secret_key = 'd708-636c-050e-41ba-4926-dbbe';
-        $this->public_key = 'cddf-a1e2-8475-61b4-8ae2-c38a';
-
-        // API URL
-
-        $this->api_url = 'https://development-backend.kashing.co.uk/';
-
-        // Set prefix
-
-        $prefix = Kashing_Payments::$data_prefix;
-
-    }
-
-    function get_post_types() {
-
-        $custom_post_data = array();
-
-        $args = array(
-            'post_type' => 'kashing',
-            'posts_per_page' => -1
-        );
-
-        $the_query = new WP_Query( $args );
-
-        if ($the_query -> have_posts() ) {
-            while ( $the_query->have_posts() ) {
-                $the_query -> the_post();
-
-                $title = get_the_title();
-                $id = get_the_ID();
-
-                array_push($custom_post_data,
-                    array(
-                        'text' => $title,
-                        'value' => strval($id)
-                ));
-            }
-
-            $response = array(
-                'data' => array_reverse($custom_post_data)
-            );
-
-            wp_send_json_success( json_encode( $response ) );
+        if ( kashing_option( 'test_mode' ) == 'no' ) {
+            $this->test_mode = false;
+            $option_prefix = 'live_';
+            $this->api_url = 'https://development-backend.kashing.co.uk/'; // Live API URL TODO
         } else {
-
-            wp_send_json_error( 'no posts yet');
+            $option_prefix = 'test_';
+            $this->api_url = 'https://development-backend.kashing.co.uk/'; // Dev API URL
         }
 
-        wp_reset_query();
+        // API Keys
+
+        // Secret key
+
+        $option_name = $option_prefix . 'skey';
+
+        if ( kashing_option( $option_name ) != '' ) {
+            $this->secret_key = kashing_option( $option_name );
+        } else {
+            $this->add_error( array(
+                'field' => $option_name,
+                'type' => 'missing_field',
+                'msg' => __( 'The secret key is missing.', 'kashing' )
+            ) );
+        }
+
+        // Public Key
+
+        $option_name = $option_prefix . 'pkey';
+
+        if ( kashing_option( $option_name ) != '' ) {
+            $this->public_key = kashing_option( $option_name );
+        } else {
+            $this->add_error( array(
+                'field' => $option_name,
+                'type' => 'missing_field',
+                'msg' => __( 'The public key is missing.', 'kashing' )
+            ) );
+        }
+
+        // Merchant ID
+
+        $option_name = $option_prefix . 'merchant_id';
+
+        if ( kashing_option( $option_name ) != '' ) {
+            $this->merchant_id = kashing_option( $option_name );
+        } else { // No merchant ID provided
+            $this->add_error( array(
+                'field' => $option_name,
+                'type' => 'missing_field',
+                'msg' => __( 'The merchant ID is missing.', 'kashing' )
+            ) );
+        }
+
+        // Deal with errors
+
+        global $kashing_configuration_errors; // Store an information about the configuration error globally
+
+        if ( $this->has_errors == true ) {
+            $kashing_configuration_errors = true; // There are configuration errors
+            if ( is_admin() ) { // Print admin notices
+                add_action( 'admin_notices', array( $this, 'print_admin_notices' ) );
+            }
+        } else {
+            $kashing_configuration_errors = false; // No errors
+        }
+
     }
+
+    /**
+     * Errors handler.
+     *
+     * @param array
+     *
+     * @return boolean
+     */
+
+     public function add_error( $error ) {
+
+        // Check if this is the first error to be added - if so, create an array.
+
+        if ( $this->has_errors == false ) {
+            $this->has_errors = true;
+        }
+
+        // Add an error to the array.
+
+        if ( is_array( $error) ) {
+            $this->errors[] = $error;
+            return true;
+        }
+
+        return false;
+
+    }
+
+    /**
+     * Print admin notices.
+     *
+     */
+
+    public function print_admin_notices() {
+
+        if ( !is_admin() && $this->has_errors == false ) return false; // Another check, just in case.
+
+        $notice_error_content = '';
+
+        foreach ( $this->errors as $error ) {
+
+            if ( array_key_exists( 'msg', $error ) ) {
+                $notice_error_content .= ' ' . $error[ 'msg' ];
+            }
+
+        }
+
+        if ( $notice_error_content != '' ) {
+
+            $class = 'notice notice-error';
+            $message = __( 'Kashing configuration issues:', 'kashing' ) . ' ' . $notice_error_content;
+
+            printf(
+                '<div class="%1$s"><p>%2$s <a href="%4$s">%3$s</a></p></div>',
+                esc_attr( $class ), esc_html( $message ),
+                esc_html__( 'Visit Plugin Settings', 'kashing' ),
+                admin_url( 'edit.php?post_type=kashing&page=kashing-settings' )
+            );
+
+        } else {
+            return '';
+        }
+
+    }
+
 
     /**
      * Ajax function added to wp_ajax. Can be called with jQuery AJAX.
      */
 
-    function ajax_process() {
+    function ajax_api_process_transaction() {
 
         // Get form ID
 
@@ -127,15 +262,6 @@ class Kashing_Ajax {
 
         // Gather transaction data
 
-        $merchant_id = kashing_option( 'test_merchant_id' );
-
-        if ( $merchant_id == null ) {
-            // Jakieś sprawdzenie wcześniejsze trzeba dodać tj. jeżeli merchant_id nie jest ustawiony w opcjach wtyczki to żeby od razu szedł error, a nie błędne zapytanie było wysyłane do API Kashingu
-            $merchant_id = '207';
-        }
-
-        $merchant_id = '207';
-
         // Transaction Amount
 
         $amount = $this->get_transaction_amount( $form_id );
@@ -148,10 +274,10 @@ class Kashing_Ajax {
 
         // Return URL
 
-        if ( kashing_option( 'return_page' ) != '' && get_post_status( kashing_option( 'return_page' ) ) ) {
-            $return_url = get_permalink( kashing_option( 'return_page' ) );
+        if ( isset( $_REQUEST[ 'page_id' ] ) && get_post_status( $_REQUEST[ 'page_id' ] ) ) {
+            $return_url = get_permalink( $_REQUEST[ 'page_id' ] );
         } else {
-            $return_url = get_permalink( $form_id ); // If no return page found, we need to redirect somewhere else.
+            $return_url = get_home_url(); // If no return page found, we need to redirect somewhere else.
         }
 
         // Description
@@ -165,7 +291,7 @@ class Kashing_Ajax {
         // Array with transaction data
 
         $transaction_data = array(
-            'merchantid' => $merchant_id,
+            'merchantid' => $this->merchant_id,
             'amount' => $amount,
             'currency' => $currency,
             'returnurl' => esc_url( $return_url ),
@@ -204,7 +330,7 @@ class Kashing_Ajax {
 
         // Get the transaction psign
 
-        $transaction_psign = $this->get_transaction_psign( $transaction_data );
+        $transaction_psign = $this->get_psign( $transaction_data );
 
         // Final API Call Body with the psign (merging with the $transaction_data array)
 
@@ -290,11 +416,11 @@ class Kashing_Ajax {
      * @return string
      */
 
-    public function get_transaction_psign( $transaction_data_array ) {
+    public function get_psign( $data_array ) {
 
         // The transaction string to be hashed: secret key + transaction data string
 
-        $transaction_string = $this->secret_key . $this->extract_transaction_data( $transaction_data_array );
+        $transaction_string = $this->secret_key . $this->extract_transaction_data( $data_array );
 
         // SHA1
 
@@ -346,6 +472,85 @@ class Kashing_Ajax {
 
     }
 
+    /**
+     * Make an API call for more details about the payment failure.
+     *
+     * @param string
+     *
+     * @return array
+     */
+
+    public function api_get_transaction_error_details( $transaction_id, $uid = null) {
+
+        // Full API Call URL
+
+        $url = $this->api_url . 'json/transaction/find';
+        //$url = $this->api_url . 'transaction/retrieve';
+
+        // Call data
+
+        $merchant_id = kashing_option( 'test_merchant_id' ); // Merchant ID
+
+        // Call data array
+
+        $data_array = array(
+            'MerchantID' => $this->merchant_id,
+            'TransactionID' => $transaction_id
+        );
+
+        // TODO: Add UID if exists
+
+        // if ( $uid = null ) $uid = ''; // Optional parameter
+        // 'uid' => $uid
+
+        // Psign
+
+        $call_psign = $this->get_psign( $data_array );
+
+        // Final API Call Body with the psign (merging with the $transaction_data array)
+
+        $final_data_array = array_merge(
+            $data_array,
+            array(
+                'pSign' => $call_psign
+            )
+        );
+
+        // Encode the final transaction array to JSON
+
+        $body = json_encode( $final_data_array );
+
+        print_r( $body ); // TODO Remove
+
+        // Make the API Call
+
+        $response = wp_remote_post(
+            $url,
+            array(
+                'method' => 'POST',
+                'timeout' => 20,
+                'headers' => array( 'Content-Type' => 'application/json' ),
+                'body' => $body,
+            )
+        );
+
+        // Deal with the API response
+
+        if ( is_wp_error( $response ) ) {
+            //wp_send_json_error( $response );
+        } else {
+            return $response;
+        }
+
+//        echo '<pre>';
+//        var_dump( $response );
+//        echo '</pre>';
+
+        return;
+
+    }
+
+
 }
 
-$kashing_ajax = new Kashing_Ajax();
+$kashing_ajax = new Kashing_API();

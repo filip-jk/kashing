@@ -11,6 +11,7 @@
             if ( validateKashingForm() == false ) {
 
                 return;
+
             } else {
 
                 // Making an AJAX call to a PHP script:
@@ -20,8 +21,9 @@
                     type: 'POST',
                     dataType: 'JSON',
                     data: {
-                        action: 'call_kashing_ajax', // Name of the PHP function assigned to WP Ajax
+                        action: 'call_kashing_post_transaction', // Name of the PHP function assigned to WP Ajax
                         form_id: $( '#kashing-form-id' ).val(),
+                        page_id: kashing_wp_object.page_id,
                         // ANY other properties of data are passed to your_function()
                         // in the PHP global $_REQUEST (or $_POST in this case)
                         firstname : $( '#kashing-firstname' ).val(),
@@ -42,7 +44,7 @@
 
                             var response = JSON.parse( resp.data );
 
-                            //console.log( response );
+                            console.log( response );
 
                             // Check response type and proceed accordingly
 
@@ -55,7 +57,7 @@
                             // this "error" case means the ajax call, itself, succeeded, but the function
                             // called returned an error condition
                             alert ( 'Error: ' ) ;
-                            //console.log( resp );
+                            console.log( resp );
                         }
                     },
                     error: function (xhr, ajaxOptions, thrownError) {
@@ -107,7 +109,6 @@
                 'data-validation' : {
                     "required" : true,
                     "minlength" : 1,
-                    "type" : "postcode"
                 }}
 
         ];

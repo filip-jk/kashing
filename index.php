@@ -28,6 +28,10 @@ class Kashing_Payments {
 
     function __construct() {
 
+        // Kashing Functions
+
+        require_once KASHING_PATH . 'inc/kashing-functions.php';
+
         // Load Metabox Core
 
         $this->load_metaboxes();
@@ -57,12 +61,11 @@ class Kashing_Payments {
 
         $this->plugin_ajax();
 
-        // Kashing Functions
+        // Helpers
 
-        require_once KASHING_PATH . 'inc/kashing-functions.php';
-        require_once KASHING_PATH . 'inc/helpers/kashing-currency.php';
-        require_once KASHING_PATH . 'inc/helpers/countries/kashing-countries.php';
-        
+        require_once KASHING_PATH . 'inc/helpers/currency/kashing-currency.php'; // Currency
+        require_once KASHING_PATH . 'inc/helpers/countries/kashing-countries.php'; // Countries
+
     }
 
     /**
@@ -136,8 +139,7 @@ class Kashing_Payments {
 
         wp_enqueue_style( 'kashing-admin', plugin_dir_url( __FILE__ ) . 'assets/css/kashing-admin.css' );
         wp_enqueue_script( 'kashing-backend-js', plugin_dir_url( __FILE__ ) . 'assets/js/kashing-backend.js', array( 'jquery' ) );
-	    wp_enqueue_script( 'kashing-metaboxes-js', plugin_dir_url( __FILE__ ) . 'assets/js/kashing-metaboxes.js', array( 'jquery' ) );
-
+        //wp_enqueue_script( 'kashing-metaboxes-js', plugin_dir_url( __FILE__ ) . 'assets/js/kashing-metaboxes.js', array( 'jquery' ) );
         wp_localize_script(
             'kashing-backend-js',
             'post_types_wp_object',
@@ -164,7 +166,8 @@ class Kashing_Payments {
             'kashing-frontend-js',
             'kashing_wp_object',
             array(
-                'wp_ajax_url' => admin_url( 'admin-ajax.php' )
+                'wp_ajax_url' => admin_url( 'admin-ajax.php' ),
+                'page_id' => get_the_ID()
             )
         );
 
@@ -176,22 +179,8 @@ class Kashing_Payments {
 
     private function load_shortcodes() {
 
+        require_once KASHING_PATH . 'inc/kashing-shortcodes.php';
 
-        require_once KASHING_PATH . 'inc/shortcodes/kashing-form.php';
-        require_once KASHING_PATH . 'inc/shortcodes/payment-complete.php';
-
-        // "Add Kashing Form" button
-
-        add_action( 'media_buttons', array( $this, 'action_add_shortcode_button' ) ); // Dodaje przycisk NAD edytor
-
-    }
-
-    /**
-     * Add a shortcode button to the WordPress post/page editor.
-     */
-
-    public function action_add_shortcode_button( $editor_id ) {
-        echo '<a href="#" class="button" id="add-kashing-form">' . esc_html__( 'Add Kashing Form', 'kashing' ) . '</a>';
     }
 
     /**
@@ -200,7 +189,7 @@ class Kashing_Payments {
 
     public function plugin_ajax() {
 
-        require_once KASHING_PATH . 'inc/kashing-ajax.php';
+        require_once KASHING_PATH . 'inc/kashing-api.php';
 
     }
 
