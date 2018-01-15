@@ -10,8 +10,7 @@
 
             if ( validateKashingForm() == false ) {
 
-
-                return; // TO-DO
+                return;
             } else {
 
                 // Making an AJAX call to a PHP script:
@@ -115,6 +114,7 @@
 
             //var form_data = $( '#kashing-form-id' ).serializeArray();
 
+            //$( '.error' ).remove();
             var errorFree = true;
 
             //for ( var input in form_data ) {
@@ -139,7 +139,7 @@
 
                     for ( var attr in attributes ) {
 
-                        if ( !validationFunctions[attr](fieldValue, attributes[attr]) ) {
+                        if ( !validationFunctions[attr]( fieldValue, attributes[attr] ) ) {
 
                             isDataValid = false;
                             errorFree = false;
@@ -149,11 +149,11 @@
 
                     if ( isDataValid ) {
 
-                        console.log("Valid: " + fieldName);
+                        validData( fieldName );
 
                     } else {
 
-                        invalidData(fieldName);
+                        invalidData( fieldName );
                     }
 
 
@@ -175,17 +175,46 @@
 
     }
 
+    /**
+     *  Mark invalid field in kashing form.
+     */
+
     function invalidData( fieldName ) {
 
         var selector = 'input[name="' + fieldName + '"]';
         var message = 'Invalid field';
 
         var parent = $( selector ).closest( '.input-holder' );
+        var error = parent.find( '.error' );
 
-        parent.addClass( 'invalid-field' );
-        parent.append( "<span class=\"error\">" +  message + "</span>" );
+
+        if ( error.length == 0 ) {
+
+            parent.addClass( 'invalid-field' );
+            parent.append( "<span class=\"error\">" +  message + "</span>" );
+
+        } else {
+            //already marked as invalid
+        }
 
     }
+
+    /**
+     *  Remove invalid field formatting.
+     */
+
+    function validData( fieldName ) {
+
+        var selector = 'input[name="' + fieldName + '"]';
+        var parent = $( selector ).closest( '.input-holder' );
+
+        parent.find( '.error' ).remove();
+        parent.removeClass( 'invalid-field' );
+    }
+
+    /**
+     *  Validation function.
+     */
 
     var validationFunctions = [];
 
@@ -207,6 +236,10 @@
         }
     };
 
+    /**
+     *  Validation function.
+     */
+
     validationFunctions['minlength'] = function (value, paramValue) {
 
         if ( paramValue >>> 0 === parseFloat(paramValue) ) { //if positive integer
@@ -225,12 +258,33 @@
         }
     };
 
+    /**
+     *  Validation function.
+     */
+
     validationFunctions['type'] = function (value, paramValue) {
 
         if (paramValue === 'postcode') {
 
-            value = value.replace(/\s/g, "");
-            var regex = /^[A-Z]{1,2}[0-9]{1,2} ?[0-9][A-Z]{2}$/i;
+            //value = value.replace(/\s/g, "");
+
+            var regex = '';
+            var country = $( '#kashing-country' ).val();
+
+
+            if( country === 'US' ) {
+
+                regex = /^\d{5}(?:[-\s]\d{4})?$/;
+
+            } else if ( country === 'UK' ){
+
+                regex = /^(([gG][iI][rR] {0,}0[aA]{2})|((([a-pr-uwyzA-PR-UWYZ][a-hk-yA-HK-Y]?[0-9][0-9]?)|(([a-pr-uwyzA-PR-UWYZ][0-9][a-hjkstuwA-HJKSTUW])|([a-pr-uwyzA-PR-UWYZ][a-hk-yA-HK-Y][0-9][abehmnprv-yABEHMNPRV-Y]))) {0,}[0-9][abd-hjlnp-uw-zABD-HJLNP-UW-Z]{2}))$/i;
+
+            } else {
+                return false;
+            }
+
+
             return regex.test(value);
 
         } else {

@@ -6,3 +6,11 @@
     display: block;
     margin-bottom: 10px;
 }
+
+.error{
+    color: red;
+}
+
+.invalid-field {
+    background-color : yellow;
+}
