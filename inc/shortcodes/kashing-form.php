@@ -140,18 +140,22 @@ if ( !function_exists( 'kashing_form_shortcode' ) ) {
 
             <div class="input-holder">
                 <label for="kashing-country"><?php esc_html_e( 'Country', 'kashing' ); ?></label>
-                <select name="country" id="kashing-country" class="kashing-required-field">
+                <select name="country" id="kashing-country" class="kashing-required-field" >
                     <?php
 
-                    $countries = array(
-                        'UK' => 'United Kingdom',
-                        'US' => 'United States'
-                    );
+                    $kashing_countries = new Kashing_Countries();
+
+                    $countries = $kashing_countries->get_all();
+
 
                     foreach( $countries as $country_code => $country_name ) {
-                        echo '<option value="' . esc_attr( $country_code ) . '">' . esc_html( $country_name ) . '</option>';
+                        if($country_code === 'UK') {
+	                        echo '<option value="' . esc_attr( $country_code ) . '" selected >' . esc_html( $country_name ) . '</option>';
+                        } else {
+	                        echo '<option value="' . esc_attr( $country_code ) . '">' . esc_html( $country_name ) . '</option>';
+                        }
                     }
-
+                    
                     ?>
                 </select>
             </div>

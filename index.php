@@ -61,7 +61,8 @@ class Kashing_Payments {
 
         require_once KASHING_PATH . 'inc/kashing-functions.php';
         require_once KASHING_PATH . 'inc/helpers/kashing-currency.php';
-
+        require_once KASHING_PATH . 'inc/helpers/countries/kashing-countries.php';
+        
     }
 
     /**
