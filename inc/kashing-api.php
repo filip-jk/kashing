@@ -158,7 +158,7 @@ class Kashing_API {
 
         // There are errors in the plugin configuration
 
-        $kashing_configuration_errors = false; // No errors
+        $kashing_configuration_errors = true;
 
         return false;
 
