@@ -243,6 +243,42 @@ class Kashing_API {
 
     function action_form_submit() {
 
+        // Double check if there are configuration errors
+
+        if ( $this->has_errors == true ) {
+            if ( current_user_can( 'administrator' ) ) {
+                wp_die( __( 'There are some Kashing Payments plugin configuration issues. Please visit the plugin page to learn more.', 'kashing' ) );
+            } else {
+                wp_die( __( 'Something went wrong. Please contact the site administrator.', 'kashing' ) );
+            }
+        }
+
+        // Get the form ID
+
+        if ( isset( $_POST[ 'form_id' ] ) ) {
+
+            $form_id = $_POST[ 'form_id' ];
+
+            // Check if form with a given ID exists:
+
+            if ( get_post_status( $form_id ) === false ) {
+                if ( current_user_can( 'administrator' ) ) {
+                    wp_die( __( 'The form with a given ID in the shortcode does not exist. Please add the [kashing_form] shortcode again.', 'kashing' ) );
+                } else {
+                    wp_die( __( 'Something went wrong. Please contact the site administrator.', 'kashing' ) );
+                }
+                return;
+            }
+
+        } else { // No form ID provided with the call
+            if ( current_user_can( 'administrator' ) ) {
+                wp_die( __( 'No form ID was provided in the Kashing Form.', 'kashing' ) );
+            } else {
+                wp_die( __( 'Something went wrong. Please contact the site administrator.', 'kashing' ) );
+            }
+            return;
+        }
+
         // Detect if AJAX or regular POST submission
 
         if ( isset( $_POST[ 'ajaxrequest' ] ) && $_POST[ 'ajaxrequest' ] == true ) {
@@ -255,7 +291,7 @@ class Kashing_API {
 
         if ( !isset( $_POST[ 'kashing_form_nonce' ] ) || !wp_verify_nonce( $_POST[ 'kashing_form_nonce' ], 'kashing_form_nonce' ) ) {
 
-            $msg = __( 'Illegal form submission detected. Please refresh the page and try again.', 'kashing' );
+            $msg = __( 'Illegal form submission detected.', 'kashing' );
 
             if ( $ajax == true ) { // Different error handling for AJAX
                 wp_send_json_error( $msg );
@@ -267,24 +303,6 @@ class Kashing_API {
 
         }
 
-        // Get the form ID
-
-        if ( isset( $_POST[ 'form_id' ] ) ) {
-
-            $form_id = $_POST[ 'form_id' ];
-
-            // Check if form with a given ID exists:
-
-            if ( get_post_status( $form_id ) === false ) {
-                wp_die( __( 'Form with a given ID doesn not exist.', 'kashing' ) );
-                return;
-            }
-
-        } else { // No form ID provided with the call
-            wp_die( __( 'No form ID was provided.', 'kashing' ) );
-            return;
-        }
-
         // Fields array
 
         $form_fields = array(
@@ -293,8 +311,7 @@ class Kashing_API {
                 'required' => true
             ),
             array(
-                'name' => 'lastname',
-                'required' => true
+                'name' => 'lastname'
             ),
             array(
                 'name' => 'address1',
@@ -345,7 +362,7 @@ class Kashing_API {
 
             // Validate field
 
-            if ( ( !isset( $_POST[ $field[ 'name' ] ] ) || isset( $_POST[ $field[ 'name' ] ] ) && $_POST[ $field[ 'name' ] ] == '' ) && $required == true ) {
+            if ( $required == true && ( !isset( $_POST[ $field[ 'name' ] ] ) || isset( $_POST[ $field[ 'name' ] ] ) && $_POST[ $field[ 'name' ] ] == '' ) ) {
                 // Field is missing - either not set or empty input value
                 $validation = false;
             } elseif ( isset( $_POST[ $field[ 'name' ] ] ) && $_POST[ $field[ 'name' ] ] != '' ) {
@@ -372,7 +389,7 @@ class Kashing_API {
                 // Redirect to the form page
 
                 if ( isset( $_POST[ 'origin' ] ) && get_post_status( $_POST[ 'origin' ] ) ) {
-                    $redirect_url = get_permalink( $_POST[ 'origin' ] );
+                    $redirect_url = esc_url( get_permalink( $_POST[ 'origin' ] ) );
 
                     // Add form error parameter
 
@@ -386,7 +403,7 @@ class Kashing_API {
 
                     // Make a redirection
 
-                    wp_redirect( esc_url( $redirect_url ) );
+                    wp_redirect( $redirect_url );
 
                 } else {
                     wp_die( __( 'There are some missing fields in the form.', 'kashing' ) );
@@ -689,51 +706,3 @@ class Kashing_API {
 }
 
 $kashing_ajax = new Kashing_API();
-
-// Test test
-
-//add_action( 'admin_init', 'add_redirects' );
-
-//function add_redirects() {
-//    add_action( 'admin_post_kashing_form_submit_hook', 'action_form_submit' );
-//    add_action( 'admin_post_nopriv_kashing_form_submit_hook', 'action_form_submit' );
-//
-//    add_action( 'wp_ajax_kashing_form_submit_hook', 'action_form_submit' );
-//    add_action( 'wp_ajax_nopriv_kashing_form_submit_hook', 'action_form_submit' );
-//}
-
-
-function action_form_submit() {
-
-    var_dump( $_POST );
-
-    //echo 'Page ID: ' . get_permalink( $_POST[ 'page_id' ] );
-    wp_redirect( get_permalink( $_POST[ 'origin' ] ) );
-
-    //wp_redirect( 'test' );
-    //exit();
-
-    //exit;
-
-//    echo '<br>REGULAR PROCESSING : ' . $_POST[ 'page_id' ] . ' |';
-//
-//    echo kashing_option( 'test_mode' );
-//
-//    if ( isset( $_POST['ajaxrequest'] ) && $_POST['ajaxrequest'] === 'true' ) {
-//        // server response
-//        echo '<br>AJAX REQUEST:';
-//        echo '<pre>';
-//        print_r( $_POST );
-//        echo '</pre>';
-//        wp_die();
-//    } else {
-//        echo '<br>REGULAR POST';
-//
-//
-//    }
-//
-//    wp_die();
-//
-//    return 'bla';
-
-}
