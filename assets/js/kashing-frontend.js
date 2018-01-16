@@ -28,12 +28,25 @@
                 data:   ajax_form_data,
                 success: function( response ) {
                     if ( response.success ) { // The API Call was successful
+
+                        //validServerData();
+
                         console.log( response );
                         if ( response.data.redirect != '' ) {
                             window.location.href = response.data.redirect;
                         }
                     } else { // The API Call went wrong
                         alert( 'ERROR' );
+
+                         //dla odpowiedzi typu {success: false, data: ["firstname", "lastname"]}
+                        // for (var name in resp['data']) {
+
+                        //         invalidData( resp['data'][name] );
+
+                        //     }
+
+                        // invalidServerData( resp );
+
                         console.log( resp );
                     }
                 }
@@ -48,54 +61,76 @@
     function validateKashingForm() {
 
 
-        var kashingFormParameters = [
-            {
-                'name': 'firstname',
-                'data-validation' : {
-                    "required" : true,
-                    "minlength" : 1
-                }},
-            {
-                'name': 'lastname',
-                'data-validation' : {
-                    "required" : true,
-                    "minlength" : 1
-                }},
-            {
-                'name': 'address1',
-                'data-validation' : {
-                    "required" : true,
-                    "minlength" : 1
-                }},
-            {
-                'name': 'city',
-                'data-validation' : {
-                    "required" : true,
-                    "minlength" : 1
-                }},
-            {
-                'name': 'postcode',
-                'data-validation' : {
-                    "required" : true,
-                    "minlength" : 1,
-                }}
+        var kashingFormParameters = {
+                'firstname': {
+                    'data-validation': {
+                        "required": true,
+                        "minlength": 1
+                    }
+                },
+            'lastname': {
+                    'data-validation': {
+                        "required": true,
+                        "minlength": 1
+                    }
+                },
+            'address1': {
+                    'data-validation': {
+                        "required": true,
+                        "minlength": 1
+                    }
+                },
+            'address2': {
+                    'data-validation': {
+                        "required": false
+                    }
+                },
+            'city': {
+                    'data-validation': {
+                        "required": true,
+                        "minlength": 1
+                    }
+                },
+            'postcode': {
+                    'data-validation': {
+                       "required": true,
+                        "minlength": 1
+                    }
+                },
+            'email': {
+                    'data-validation': {
+                        "required": true,
+                        "minlength": 1,
+                        'type': 'email'
+                    }
+                },
+            'phone': {
+                    'data-validation': {
+                        "required": false
+                    }
+                }
+        };
 
-        ];
 
-            //var form_data = $( '#kashing-form-id' ).serializeArray();
+            var inputFields = $( '.input-holder > input' ).serializeArray();
 
-            //$( '.error' ).remove();
             var errorFree = true;
 
-            //for ( var input in form_data ) {
-            for ( var input in kashingFormParameters ) {
+            for ( var input in inputFields ) {
 
-                // var fieldName = form_data[ input ][ 'name' ];
-                // var fieldValue = form_data[ input ][ 'value' ];
-                // var selector = 'input[name="' + fieldName + '"]';
-                // var valAttributes = $( selector ).attr( 'data-validation' );
-                var formData = kashingFormParameters[input];
-                var fieldName = formData[ 'name' ];
+                var fieldName = inputFields[ input ][ 'name' ];
+
+                var formData = kashingFormParameters[fieldName];
+
+                //if not in kashingFormParameters
+                if(formData == undefined) {
+
+                    invalidData( fieldName );
+                    errorFree = false;
+
+                    continue;
+                }
+
                 var valAttributes = formData[ 'data-validation' ];
                 var selector = 'input[name="' + fieldName + '"]';
                 var fieldValue = $( selector ).attr( 'value' );
@@ -124,6 +159,7 @@
                     } else {
 
                         invalidData( fieldName );
+
                     }
 
 
@@ -170,6 +206,45 @@
     }
 
     /**
+     *  Invalid data on a server side.
+     */
+
+    function invalidServerData( errorData ) {
+
+
+        var parent = $( '.kashing-form' );
+
+        var error = $( '.kashing-form > .server-error');
+
+        if ( error.length == 0 ) {
+
+            parent.prepend( "<div class=\"server-error invalid-field\">" +  JSON.stringify(errorData) + "</div>" );
+
+        } else {
+            //already marked as invalid
+        }
+
+    }
+
+    /**
+     *  Invalid data on a server side.
+     */
+
+    function validServerData() {
+
+        var error = $( '.kashing-form > .server-error');
+
+        if ( error.length > 0 ) {
+
+            error.remove();
+
+        } else {
+            //already marked as invalid
+        }
+
+    }
+
+    /**
      *  Remove invalid field formatting.
      */
 
@@ -192,13 +267,21 @@
 
         if ( typeof(paramValue) === 'boolean' ) {
 
-            if ( value ) {
+            if (paramValue) {
 
-                return true;
+                if ( value ) {
+
+                    return true;
+
+                } else {
+
+                    return false;
+                }
 
             } else {
 
-                return false;
+                return true;
+
             }
         } else {
 
@@ -254,6 +337,12 @@
                 return false;
             }
 
+
+            return regex.test(value);
+
+        } else if ( paramValue === 'email' ) {
+
+            var regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
             return regex.test(value);
 

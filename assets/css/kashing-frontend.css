@@ -11,6 +11,10 @@
     color: red;
 }
 
+.server-error{
+    color: blue;
+}
+
 .invalid-field {
     background-color : yellow;
 }
