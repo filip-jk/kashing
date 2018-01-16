@@ -35,53 +35,34 @@ if ( !function_exists( 'kashing_form_shortcode' ) ) {
 
             ?>
 
-            <form class="kashing-form">
+            <form id="kashing-form" class="kashing-form" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" method="POST">
 
                 <div class="input-holder">
                     <label for="kashing-firstname"><?php esc_html_e('First Name', 'kashing'); ?></label>
-                    <input type="text" name="firstname" id="kashing-firstname" class="kashing-required-field"
-                           value="Ten"
-                           required data-validation='{
-                       "required" : true,
-                       "minlength" : 1
-                       }'>
+                    <input type="text" name="firstname" id="kashing-firstname" class="kashing-required-field" value="Ten">
                 </div>
 
                 <div class="input-holder">
                     <label for="kashing-lastname"><?php esc_html_e('Last Name', 'kashing'); ?></label>
-                    <input type="text" name="lastname" id="kashing-lastname" class="kashing-required-field"
-                           value="Green"
-                           required data-validation='{
-                       "required" : true,
-                       "minlength" : 1
-                       }'>
+                    <input type="text" name="lastname" id="kashing-lastname" class="kashing-required-field" value="Green" required>
                 </div>
 
                 <div class="input-holder">
                     <label for="kashing-address1"><?php esc_html_e('Address 1', 'kashing'); ?></label>
-                    <input type="text" name="address1" id="kashing-address1" class="kashing-required-field"
-                           value="Flat 6 Primrose Rise"
-                           required data-validation='{
-                       "required" : true,
-                       "minlength" : 1
-                       }'>
+                    <input type="text" name="address1" id="kashing-address1" class="kashing-required-field" value="Flat 6 Primrose Rise" required>
                 </div>
 
                 <?php
 
                 // Check if the address2 field is enabled in the form meta options.
 
-                if (get_post_meta($form_id, $prefix . 'address2', true) == true) {
+                if ( get_post_meta($form_id, $prefix . 'address2', true) == true ) {
 
                     ?>
 
                     <div class="input-holder">
                         <label for="kashing-address2"><?php esc_html_e('Address 2', 'kashing'); ?></label>
-                        <input type="text" name="address2" id="kashing-address2" value
-                               required data-validation='{
-                       "required" : true,
-                       "minlength" : 1
-                       }'>
+                        <input type="text" name="address2" id="kashing-address2">
                     </div>
 
                     <?php
@@ -90,17 +71,13 @@ if ( !function_exists( 'kashing_form_shortcode' ) ) {
 
                 // Check if the address2 field is enabled in the form meta options.
 
-                if (get_post_meta($form_id, $prefix . 'email', true) == true) {
+                if ( get_post_meta($form_id, $prefix . 'email', true) == true ) {
 
                     ?>
 
                     <div class="input-holder">
                         <label for="kashing-address2"><?php esc_html_e('Email', 'kashing'); ?></label>
-                        <input type="text" name="email" id="kashing-email" value
-                               required data-validation='{
-                       "required" : true,
-                       "minlength" : 1
-                       }'>
+                        <input type="text" name="email" id="kashing-email">
                     </div>
 
                     <?php
@@ -109,17 +86,13 @@ if ( !function_exists( 'kashing_form_shortcode' ) ) {
 
                 // Check if the address2 field is enabled in the form meta options.
 
-                if (get_post_meta($form_id, $prefix . 'phone', true) == true) {
+                if ( get_post_meta($form_id, $prefix . 'phone', true) == true ) {
 
                     ?>
 
                     <div class="input-holder">
                         <label for="kashing-address2"><?php esc_html_e('Phone', 'kashing'); ?></label>
-                        <input type="text" name="phone" id="kashing-phone" value
-                               required data-validation='{
-                       "required" : true,
-                       "minlength" : 1
-                       }'>
+                        <input type="text" name="phone" id="kashing-phone">
                     </div>
 
                     <?php
@@ -130,22 +103,12 @@ if ( !function_exists( 'kashing_form_shortcode' ) ) {
 
                 <div class="input-holder">
                     <label for="kashing-city"><?php esc_html_e('City', 'kashing'); ?></label>
-                    <input type="text" name="city" id="kashing-city" class="kashing-required-field" value="Northampton"
-                           required data-validation='{
-                       "required" : true,
-                       "minlength" : 1
-                       }'>
+                    <input type="text" name="city" id="kashing-city" class="kashing-required-field" value="Northampton" required'>
                 </div>
 
                 <div class="input-holder">
                     <label for="kashing-postcode"><?php esc_html_e('Post Code', 'kashing'); ?></label>
-                    <input type="text" name="postcode" id="kashing-postcode" class="kashing-required-field"
-                           value="12-123"
-                           required data-validation='{
-                       "required" : true,
-                       "minlength" : 1,
-                       "type" : "postcode"
-                       }'>
+                    <input type="text" name="postcode" id="kashing-postcode" class="kashing-required-field" value="12-123" required'>
                 </div>
 
                 <div class="input-holder">
@@ -170,10 +133,20 @@ if ( !function_exists( 'kashing_form_shortcode' ) ) {
                     </select>
                 </div>
 
-                <input type="hidden" id="kashing-form-id" value="<?php echo esc_attr($form_id); ?>">
+                <?php
 
-                <button class="button btn" id="kashing-pay"
-                        type="button"><?php esc_html_e('Pay with Kashing', 'kashing'); ?></button>
+                // Form nonce
+
+                $kashing_form_nonce = wp_create_nonce( 'kashing_form_nonce' );
+
+                ?>
+
+                <input type="hidden" name="form_id" value="<?php echo esc_attr( $form_id ); ?>">
+                <input type="hidden" name="origin" value="<?php echo get_the_ID(); ?>">
+                <input type="hidden" name="kashing_form_nonce" value="<?php echo $kashing_form_nonce; ?>">
+                <input type="hidden" name="action" value="kashing_form_submit_hook">
+
+                <button class="button btn" id="kashing-pay" type="submit"><?php esc_html_e('Pay with Kashing', 'kashing'); ?></button>
 
             </form>
 

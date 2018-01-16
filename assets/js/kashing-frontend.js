@@ -6,72 +6,40 @@
         'use strict';
 
 
-        $( '#kashing-pay' ).on( 'click', function() {
+        // New CALL
 
-            if ( validateKashingForm() == false ) {
+        $( '#kashing-formX' ).submit( function( event ) {
 
-                return;
+            event.preventDefault(); // Prevent the default form submit.
 
-            } else {
+            // Serialize the form data
 
-                // Making an AJAX call to a PHP script:
+            var ajax_form_data = $( "#kashing-form" ).serialize();
 
-                $.ajax({
-                    url: kashing_wp_object.wp_ajax_url, // wp-ajax.php
-                    type: 'POST',
-                    dataType: 'JSON',
-                    data: {
-                        action: 'call_kashing_post_transaction', // Name of the PHP function assigned to WP Ajax
-                        form_id: $( '#kashing-form-id' ).val(),
-                        page_id: kashing_wp_object.page_id,
-                        // ANY other properties of data are passed to your_function()
-                        // in the PHP global $_REQUEST (or $_POST in this case)
-                        firstname : $( '#kashing-firstname' ).val(),
-                        lastname : $( '#kashing-lastname' ).val(),
-                        address1 : $( '#kashing-address1' ).val(),
-                        city : $( '#kashing-city' ).val(),
-                        postcode : $( '#kashing-postcode' ).val(),
-                        country : $( '#kashing-country' ).val(),
-                        phone: $( '#kashing-phone' ).val(),
-                        email: $( '#kashing-email' ).val(),
-                        address2: $( '#kashing-email' ).val()
-                    },
-                    success: function ( resp ) {
+            // Add the ajax check, X-Requested-With is not always reliable
 
-                        if ( resp.success ) {
+            ajax_form_data = ajax_form_data + '&ajaxrequest=true';
 
-                            // Parse the JSON response
+            // Make an AJAX call
 
-                            var response = JSON.parse( resp.data );
-
-                            console.log( response );
-
-                            // Check response type and proceed accordingly
-
-                            if ( response.responsecode == 4 && response.redirect != '' ) { // Redirect
-                                //alert( 'Success! Redirection would go now.' );
-                                window.location.href = response.redirect;
-                            }
-
-                        } else {
-                            // this "error" case means the ajax call, itself, succeeded, but the function
-                            // called returned an error condition
-                            alert ( 'Error: ' ) ;
-                            console.log( resp );
-
+            $.ajax({
+                url:    kashing_wp_object.wp_ajax_url, // admin-ajax.php address
+                type:   'POST',
+                data:   ajax_form_data,
+                success: function( response ) {
+                    if ( response.success ) { // The API Call was successful
+                        console.log( response );
+                        if ( response.data.redirect != '' ) {
+                            window.location.href = response.data.redirect;
                         }
-                    },
-                    error: function (xhr, ajaxOptions, thrownError) {
-                        // this error case means that the ajax call, itself, failed, e.g., a syntax error
-                        // in your_function()
-                        alert ('Request failed: ') ;
-
-                    },
-                });
-
-            }
-
-
+                    } else { // The API Call went wrong
+                        alert( 'ERROR' );
+                        console.log( resp );
+                    }
+                }
+            }).fail( function() {
+                console.log( "<h2>Something went wrong with the entire AJAX call.</h2><br>" );
+            });
 
         });
 

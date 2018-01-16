@@ -64,10 +64,17 @@ class Kashing_API {
 
     function __construct() {
 
-        // The main transaction API call
+        // Form Submission Processing
 
-        add_action( 'wp_ajax_call_kashing_post_transaction', array( $this, 'ajax_api_process_transaction' ) );
-        add_action( 'wp_ajax_nopriv_call_kashing_post_transaction', array( $this, 'ajax_api_process_transaction' ) );
+        // regular POST
+
+        add_action( 'admin_post_kashing_form_submit_hook', array( $this, 'action_form_submit' ) );
+        add_action( 'admin_post_nopriv_kashing_form_submit_hook', array( $this, 'action_form_submit' ) );
+
+        // AJAX
+
+        add_action( 'wp_ajax_kashing_form_submit_hook', array( $this, 'action_form_submit' ) );
+        add_action( 'wp_ajax_nopriv_kashing_form_submit_hook', array( $this, 'action_form_submit' ) );
 
         // Determine the Test Mode
 
@@ -230,67 +237,172 @@ class Kashing_API {
 
     }
 
-
     /**
-     * Ajax function added to wp_ajax. Can be called with jQuery AJAX.
+     * Processing the Kashing form submission, $_POST is available
      */
 
-    function ajax_api_process_transaction() {
+    function action_form_submit() {
 
-        // Get form ID
+        // Detect if AJAX or regular POST submission
 
-        if ( isset( $_REQUEST[ 'form_id' ] ) ) {
+        if ( isset( $_POST[ 'ajaxrequest' ] ) && $_POST[ 'ajaxrequest' ] == true ) {
+            $ajax = true;
+        } else {
+            $ajax = false;
+        }
 
-            $form_id = $_REQUEST[ 'form_id' ];
+        // Verify Form Nonce
+
+        if ( !isset( $_POST[ 'kashing_form_nonce' ] ) || !wp_verify_nonce( $_POST[ 'kashing_form_nonce' ], 'kashing_form_nonce' ) ) {
+
+            $msg = __( 'Illegal form submission detected. Please refresh the page and try again.', 'kashing' );
+
+            if ( $ajax == true ) { // Different error handling for AJAX
+                wp_send_json_error( $msg );
+            } else {
+                wp_die( $msg );
+            }
+
+            return;
+
+        }
+
+        // Get the form ID
+
+        if ( isset( $_POST[ 'form_id' ] ) ) {
+
+            $form_id = $_POST[ 'form_id' ];
 
             // Check if form with a given ID exists:
 
             if ( get_post_status( $form_id ) === false ) {
-                wp_send_json_error( 'form doesnt exist' );
+                wp_die( __( 'Form with a given ID doesn not exist.', 'kashing' ) );
                 return;
             }
 
         } else { // No form ID provided with the call
-            wp_send_json_error( 'no form id given' );
+            wp_die( __( 'No form ID was provided.', 'kashing' ) );
             return;
         }
 
-        // Required form fields (client input)
+        // Fields array
 
-        $required_form_fields = array( 'firstname', 'address1', 'city', 'postcode', 'country' );
-        $firstname = $address1 = $city = $postcode = $country = '';
+        $form_fields = array(
+            array(
+                'name' => 'firstname',
+                'required' => true
+            ),
+            array(
+                'name' => 'lastname',
+                'required' => true
+            ),
+            array(
+                'name' => 'address1',
+                'required' => true
+            ),
+            array(
+                'name' => 'address2'
+            ),
+            array(
+                'name' => 'city',
+                'required' => true
+            ),
+            array(
+                'name' => 'postcode',
+                'required' => true
+            ),
+            array(
+                'name' => 'phone'
+            ),
+            array(
+                'name' => 'email',
+                'type' => 'email'
+            )
+        );
 
-        $missing_fields = array(); // Store missing fields
+        $field_values = array();
+        $validation = true;
 
-        // Loop through each required field and check if the value was provided in the form. If yes, assign a new variable
+        // Fields validation loop
 
-        foreach( $required_form_fields as $form_field_name ) {
-            if ( $_REQUEST[ $form_field_name ] == '' ) {
-                $missing_fields[] = $form_field_name;
-            } else {
-                ${ $form_field_name } = $_REQUEST[ $form_field_name ]; // Tworzymy zmienną np. el z tablicy 'firstname' zamieniamy na $firstname
+        foreach ( $form_fields as $field ) {
+
+            // If field is required
+
+            $required = false;
+
+            if ( array_key_exists( 'required', $field ) && $field[ 'required' ] == true ) {
+                $required = true;
             }
+
+            // Field type
+
+            $field_type = 'text';
+
+            if ( array_key_exists( 'type', $field ) && $field[ 'type' ] == 'email' ) {
+                $field_type = 'email';
+            }
+
+            // Validate field
+
+            if ( ( !isset( $_POST[ $field[ 'name' ] ] ) || isset( $_POST[ $field[ 'name' ] ] ) && $_POST[ $field[ 'name' ] ] == '' ) && $required == true ) {
+                // Field is missing - either not set or empty input value
+                $validation = false;
+            } elseif ( isset( $_POST[ $field[ 'name' ] ] ) && $_POST[ $field[ 'name' ] ] != '' ) {
+                if ( $field_type == 'email' ) {
+                    // TODO Additional email field checks
+                    $field_values[ $field[ 'name' ] ] = sanitize_email( $_POST[ $field[ 'name' ] ] );
+                } else {
+                    $field_values[ $field[ 'name' ] ] = sanitize_text_field( $_POST[ $field[ 'name' ] ] );
+                }
+            }
+
         }
 
-        $text = '';
-        $text = esc_attr( $text );
-        // echo : Bla
+        // If one of the fields is wrong, validation failed
 
-        // If missing fields:
+        if ( $validation == false ) {
 
-        if ( !empty( $missing_fields ) ) {
-            wp_send_json_error( array(
-               'error_type' => 'missing_fields',
-               'missing_fields' => $missing_fields
-            ) ); // Send an error response if a field is missing (in case JS didn't deal with it)
+            if ( $ajax == true ) { // Different error handling for AJAX
+                wp_send_json_error( array(
+                    'error_reason' => 'validation' // Repeate the JS validation
+                ) );
+            } else { // Regular POST
+
+                // Redirect to the form page
+
+                if ( isset( $_POST[ 'origin' ] ) && get_post_status( $_POST[ 'origin' ] ) ) {
+                    $redirect_url = get_permalink( $_POST[ 'origin' ] );
+
+                    // Add form error parameter
+
+                    $redirect_url = add_query_arg( 'validation_error', 'yes', $redirect_url );
+
+                    // Add current field values
+
+                    foreach ( $field_values as $name => $value ) {
+                        $redirect_url = add_query_arg( $name, $value, $redirect_url );
+                    }
+
+                    // Make a redirection
+
+                    wp_redirect( esc_url( $redirect_url ) );
+
+                } else {
+                    wp_die( __( 'There are some missing fields in the form.', 'kashing' ) );
+                }
+
+            }
+
             return;
+
         }
+
+        // Validation went okay, begin with API Transaction Call
 
         // Full transaction URL
 
         $url = $this->api_url . 'transaction/init';
-
-        // Gather transaction data
 
         // Transaction Amount
 
@@ -304,59 +416,39 @@ class Kashing_API {
 
         // Return URL
 
-        if ( isset( $_REQUEST[ 'page_id' ] ) && get_post_status( $_REQUEST[ 'page_id' ] ) ) {
-            $return_url = get_permalink( $_REQUEST[ 'page_id' ] );
+        if ( isset( $_POST[ 'origin' ] ) && get_post_status( $_POST[ 'origin' ] ) ) {
+            $return_url = get_permalink( $_POST[ 'origin' ] );
         } else {
             $return_url = get_home_url(); // If no return page found, we need to redirect somewhere else.
         }
 
         // Description
 
-        $description = __( "No description", 'kashing' );
-
         if ( get_post_meta( $form_id, Kashing_Payments::$data_prefix . 'desc', true ) ) {
             $description = get_post_meta( $form_id, Kashing_Payments::$data_prefix . 'desc', true );
+        } else {
+            $description = __( "No description.", 'kashing' );
         }
 
-        // Array with transaction data
+        // Transaction data array
 
         $transaction_data = array(
-            'merchantid' => $this->merchant_id,
-            'amount' => $amount,
-            'currency' => $currency,
-            'returnurl' => esc_url( $return_url ),
+            'merchantid' => sanitize_text_field( $this->merchant_id ),
+            'amount' => sanitize_text_field( $amount ),
+            'currency' => sanitize_text_field( $currency ),
+            'returnurl' => sanitize_text_field( $return_url ),
             "ip" => "192.168.0.111",
             "forwardedip" => "80.177.11.240",
             "merchanturl" => "shop.test.co.uk",
-            "description" => esc_textarea( $description ),
-            "firstname" => esc_textarea( $firstname ), // Form
-            "address1" => esc_textarea( $address1 ), // Form
-            "city" => esc_html( $city ),
-            "postcode" => esc_html( $postcode ),
-            "country" => esc_html( $country )
+            "description" => sanitize_text_field( $description )
         );
 
-        // Optional fields
+        // Add form input data to the transaction data array
 
-        // Address 2
-
-        $optional_field_names = array( 'address2', 'lastname', 'phone', 'email' );
-        $optional_fields = array();
-
-        foreach( $optional_field_names as $field_name ) {
-            if ( $_REQUEST[ $field_name ] != '' ) {
-                $optional_fields[ $field_name ] = $_REQUEST[ $field_name ];
-            }
-        }
-
-        // If any optional field was typed, make a merge with the $transaction_data
-
-        if ( !empty( $optional_fields ) ) {
-            $transaction_data = array_merge(
-                $transaction_data,
-                $optional_fields
-            );
-        }
+        $transaction_data = array_merge(
+            $transaction_data,
+            $field_values
+        );
 
         // Get the transaction psign
 
@@ -375,10 +467,9 @@ class Kashing_API {
             )
         );
 
-        // Encode the final transaction array to JSON
+        // API Call body in JSON Format
 
         $body = json_encode( $final_transaction_array );
-        //wp_send_json_error( $final_transaction_array ); // See the entire call body
 
         // Make the API Call
 
@@ -395,16 +486,14 @@ class Kashing_API {
         // Deal with the call response
 
         if ( is_wp_error( $response ) ) {
-            wp_send_json_error( $response->get_error_message() ); // 'error_type' => 'api_call_error'
-        } else {
-            //wp_send_json_success( $response );
+            wp_die( __( 'There was something wrong with the WP API Call.', 'kashing' ) );
+            return;
         }
 
+        // Response is fine
+
         $response_body = json_decode( $response['body'] ); // Decode the response body from JSON
-
-        $response_code = $reason_code = false;
-
-        $final_response = array();
+        $response_code = $reason_code = $final_response = false;
 
         if ( is_object( $response_body ) && is_array( $response_body->results ) && !empty( $response_body->results ) ) {
 
@@ -414,29 +503,45 @@ class Kashing_API {
             $reason_code = $response_body->results[0]->reasoncode;
 
             $final_response = array(
-                'responsecode' => $response_code,
-                'reasoncode' => $reason_code,
+                'response' => $response_code,
+                'reason' => $reason_code,
                 'merchant_id' => kashing_option( 'merchant_id' )
             );
 
             // Check response and reason codes
 
             if ( $response_code == 4 && $reason_code == 1 ) {
+
                 $redirect_url = $response_body->results[0]->redirect;
                 $final_response[ 'redirect' ] = $redirect_url;
+
+                if ( $ajax == true ) { // Different error handling for AJAX
+                    wp_send_json_success( $final_response ); // Tell JS to make a redirection.
+                } else { // Regular POST
+                    wp_redirect( esc_url( $redirect_url ) ); // Redirect to the Kashing Payment Gateway.
+                }
+
+                return;
+
+            } else {
+
+                if ( $ajax == true ) { // Different error handling for AJAX
+                    wp_send_json_error( array(
+                        'error_reason' => 'api_call'
+                    ) );
+                } else { // Regular POST
+                    wp_die( 'Error. Response: ' . $response_code . ', Reason: ' . $reason_code );
+                }
+
             }
 
-            // Send a JSON response with required data
+            return;
 
-            wp_send_json_success( json_encode( $final_response ) );
-
-        } else {
-            wp_send_json_error( 'Error: No response and reason code' );
         }
 
-        $return_value = 'your success message/data' ;
+        wp_die( __( 'There was something wrong with the Kashing response.', 'kashing' ) );
 
-        wp_send_json_success ($return_value) ;
+        return;
 
     }
 
@@ -584,3 +689,51 @@ class Kashing_API {
 }
 
 $kashing_ajax = new Kashing_API();
+
+// Test test
+
+//add_action( 'admin_init', 'add_redirects' );
+
+//function add_redirects() {
+//    add_action( 'admin_post_kashing_form_submit_hook', 'action_form_submit' );
+//    add_action( 'admin_post_nopriv_kashing_form_submit_hook', 'action_form_submit' );
+//
+//    add_action( 'wp_ajax_kashing_form_submit_hook', 'action_form_submit' );
+//    add_action( 'wp_ajax_nopriv_kashing_form_submit_hook', 'action_form_submit' );
+//}
+
+
+function action_form_submit() {
+
+    var_dump( $_POST );
+
+    //echo 'Page ID: ' . get_permalink( $_POST[ 'page_id' ] );
+    wp_redirect( get_permalink( $_POST[ 'origin' ] ) );
+
+    //wp_redirect( 'test' );
+    //exit();
+
+    //exit;
+
+//    echo '<br>REGULAR PROCESSING : ' . $_POST[ 'page_id' ] . ' |';
+//
+//    echo kashing_option( 'test_mode' );
+//
+//    if ( isset( $_POST['ajaxrequest'] ) && $_POST['ajaxrequest'] === 'true' ) {
+//        // server response
+//        echo '<br>AJAX REQUEST:';
+//        echo '<pre>';
+//        print_r( $_POST );
+//        echo '</pre>';
+//        wp_die();
+//    } else {
+//        echo '<br>REGULAR POST';
+//
+//
+//    }
+//
+//    wp_die();
+//
+//    return 'bla';
+
+}
