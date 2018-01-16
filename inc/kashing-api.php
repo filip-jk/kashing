@@ -71,6 +71,29 @@ class Kashing_API {
 
         // Determine the Test Mode
 
+        $this->init_configuration();
+
+        // Admin notices
+
+        add_action( 'admin_notices', array( $this, 'print_admin_notices' ) );
+
+    }
+
+    /**
+     * Assign configuration parameters
+     *
+     * @return boolean
+     */
+
+    public function init_configuration() {
+
+        // Reset error related variables
+
+        $this->has_errors = false;
+        $this->errors = array();
+
+        // Determine the Test Mode
+
         if ( kashing_option( 'test_mode' ) == 'no' ) {
             $this->test_mode = false;
             $option_prefix = 'live_';
@@ -124,18 +147,20 @@ class Kashing_API {
             ) );
         }
 
-        // Deal with errors
+        // Errors
 
         global $kashing_configuration_errors; // Store an information about the configuration error globally
 
-        if ( $this->has_errors == true ) {
-            $kashing_configuration_errors = true; // There are configuration errors
-            if ( is_admin() ) { // Print admin notices
-                add_action( 'admin_notices', array( $this, 'print_admin_notices' ) );
-            }
-        } else {
-            $kashing_configuration_errors = false; // No errors
+        if ( $this->has_errors == false) {
+            $kashing_configuration_errors = false; // There are configuration errors
+            return true; // Configuration is successful
         }
+
+        // There are errors in the plugin configuration
+
+        $kashing_configuration_errors = false; // No errors
+
+        return false;
 
     }
 
@@ -172,6 +197,8 @@ class Kashing_API {
      */
 
     public function print_admin_notices() {
+
+        $this->init_configuration(); // A double check to fix option save action in WordPress
 
         if ( !is_admin() && $this->has_errors == false ) return false; // Another check, just in case.
 
@@ -252,7 +279,10 @@ class Kashing_API {
         // If missing fields:
 
         if ( !empty( $missing_fields ) ) {
-            wp_send_json_error( $missing_fields ); // Send an error response if a field is missing (in case JS didn't deal with it)
+            wp_send_json_error( array(
+               'error_type' => 'missing_fields',
+               'missing_fields' => $missing_fields
+            ) ); // Send an error response if a field is missing (in case JS didn't deal with it)
             return;
         }
 
@@ -365,7 +395,7 @@ class Kashing_API {
         // Deal with the call response
 
         if ( is_wp_error( $response ) ) {
-            wp_send_json_error( $response->get_error_message() );
+            wp_send_json_error( $response->get_error_message() ); // 'error_type' => 'api_call_error'
         } else {
             //wp_send_json_success( $response );
         }

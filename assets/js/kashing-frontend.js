@@ -58,6 +58,7 @@
                             // called returned an error condition
                             alert ( 'Error: ' ) ;
                             console.log( resp );
+
                         }
                     },
                     error: function (xhr, ajaxOptions, thrownError) {
