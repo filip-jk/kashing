@@ -37,6 +37,57 @@ if ( !function_exists( 'kashing_form_shortcode' ) ) {
 
             <form id="kashing-form" class="kashing-form" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" method="POST">
 
+            <?php
+
+            $form_fields = new Kashing_Fields();
+
+	        $form_fields_data = $form_fields->get_all_fields();
+
+	            // echo $_GET['lastname'];
+	            //$parts = parse_url($url);
+	            //echo print_r($_GET);
+	            //echo $_GET;
+
+                foreach ( $_GET as $key => $values ) {
+
+                    echo $key;
+                    echo $value;
+
+                }
+                
+
+                foreach ( $form_fields_data as $field_data) {
+
+                    $name_data = $field_data[ 'name' ];
+                    $id_data = 'kashing-' . $name_data;
+	                $type_data = 'text' ;
+
+                    if( isset( $field_data[ 'type' ] ) ) {
+                        $type_data = $field_data[ 'type' ];
+                    }
+
+
+
+                    //if ( get_post_meta($form_id, $prefix . 'address2', true) == true ) {
+
+	                    ?>
+                        <div class="input-holder">
+                        <label for= <?php $id_data;?> ><?php esc_html_e('First Name', 'kashing'); ?></label>
+                        <input type= <?php $type_data;?> name= <?php $name_data;?>
+                               id= <?php $id_data;?> class="kashing-required-field" value= <?php $_GET['$name_data'];?> >
+                        </div>
+	                    <?php
+                    //}
+
+                }
+
+
+                // walidacja
+                // polaczenie z klasa
+                // sprawdzenie czy pole ma byc dodane to w petli
+                //dodanie z GETa
+		        ?>
+
                 <div class="input-holder">
                     <label for="kashing-firstname"><?php esc_html_e('First Name', 'kashing'); ?></label>
                     <input type="text" name="firstname" id="kashing-firstname" class="kashing-required-field" value="Ten">
