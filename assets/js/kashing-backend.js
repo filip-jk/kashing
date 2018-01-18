@@ -58,8 +58,6 @@
         var amountID = '#' + 'ksng-amount';
 
 
-        $(amountID).attr( 'pattern', '[0-9]+([,\.][0-9]+)?' );
-
         $(amountID).focusout(function() {
 
             var value = $( this ).val();
@@ -78,6 +76,16 @@
                 }
 
                 value = parseFloat( value.replace( /,/g, '' ) );
+            }
+
+
+            var valueDots = value.split('.');
+            valueDots = valueDots.filter(Number);
+
+            if ( valueDots.length > 1) {
+
+                value = valueDots[0] + "." + valueDots[1];
+
             }
 
 
