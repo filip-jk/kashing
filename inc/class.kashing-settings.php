@@ -88,8 +88,7 @@ class Kashing_Settings {
                         'id' => 'test_merchant_id',
                         'title' => __( 'Test Merchant ID', 'kashing' ),
                         'desc' => __( 'Enter your testing Merchant ID.', 'kashing' ),
-                        'type' => 'text',
-                        //'dependency' => array( 'test_mode', '!=', 'no' )
+                        'type' => 'text'
                     ),
                     array(
                         'id' => 'test_skey',
@@ -97,12 +96,6 @@ class Kashing_Settings {
                         'desc' => __( 'Enter your testing Kashing Secret Key.', 'kashing' ),
                         'type' => 'text'
                     ),
-//                    array(
-//                        'id' => 'test_pkey',
-//                        'title' => __( 'Test Public Key', 'kashing' ),
-//                        'desc' => __( 'Enter your testing Kashing Public Key.', 'kashing' ),
-//                        'type' => 'text'
-//                    ),
                     array(
                         'id' => 'live_merchant_id',
                         'title' => __( 'Live Merchant ID', 'kashing' ),
@@ -114,13 +107,7 @@ class Kashing_Settings {
                         'title' => __( 'Live Secret Key', 'kashing' ),
                         'desc' => __( 'Enter your live Kashing Secret Key.', 'kashing' ),
                         'type' => 'text'
-                    ),
-//                    array(
-//                        'id' => 'live_pkey',
-//                        'title' => __( 'Live Public Key', 'kashing' ),
-//                        'desc' => __( 'Enter your live Kashing Public Key.', 'kashing' ),
-//                        'type' => 'text'
-//                    )
+                    )
                 )
             ),
             array(
@@ -132,7 +119,8 @@ class Kashing_Settings {
                         'title' => __( 'Choose Currency', 'kashing' ),
                         'desc' => __( 'Choose a currency for your payments.', 'kashing' ),
                         'type' => 'select',
-                        'options' => $kashing_currency->get_all()
+                        'options' => $kashing_currency->get_all(),
+                        'default' => 'GBP'
                     ),
                     array(
                         'id' => 'success_page',
@@ -456,6 +444,7 @@ class Kashing_Settings {
             case 'select': // Select menu
 
                 $output .= '<select ' . $field_id . ' ' . $field_name . '>';
+                $output .= '<option disabled selected value> -- ' . esc_html( 'select an option', 'kashing' ) . ' -- </option>'; // Blank select option
 
                 foreach ( $field['options'] as $option_value => $option_label ) {
                     $selected = ( checked( $value, $option_value, false ) == true ) ? ' selected="selected"' : '';

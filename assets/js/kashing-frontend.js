@@ -5,54 +5,21 @@
     $(document).ready(function() {
         'use strict';
 
-
         // New CALL
 
-        $( '#kashing-formX' ).submit( function( event ) {
+        var $kashingForm = $( '#kashing-form' );
 
-            event.preventDefault(); // Prevent the default form submit.
+        $kashingForm.submit( function( event ) {
 
-            // Serialize the form data
+            var validated = false;
 
-            var ajax_form_data = $( "#kashing-form" ).serialize();
+            // TODO: Tutaj robimy walidacje i wyswietlamy ewentualne bledy w formularzu
 
-            // Add the ajax check, X-Requested-With is not always reliable
-
-            ajax_form_data = ajax_form_data + '&ajaxrequest=true';
-
-            // Make an AJAX call
-
-            $.ajax({
-                url:    kashing_wp_object.wp_ajax_url, // admin-ajax.php address
-                type:   'POST',
-                data:   ajax_form_data,
-                success: function( response ) {
-                    if ( response.success ) { // The API Call was successful
-
-                        //validServerData();
-
-                        console.log( response );
-                        if ( response.data.redirect_url != '' ) {
-                            //window.location.href = response.data.redirect_url;
-                        }
-                    } else { // The API Call went wrong
-                        alert( 'ERROR' );
-
-                         //dla odpowiedzi typu {success: false, data: ["firstname", "lastname"]}
-                        // for (var name in resp['data']) {
-
-                        //         invalidData( resp['data'][name] );
-
-                        //     }
-
-                        // invalidServerData( resp );
-
-                        console.log( response );
-                    }
-                }
-            }).fail( function() {
-                console.log( "<h2>Something went wrong with the entire AJAX call.</h2><br>" );
-            });
+            if ( validated == false ) {
+                event.preventDefault(); // Prevent the default form submit.
+            } else { // Form okay, proceed with submission.
+                return true;
+            }
 
         });
 

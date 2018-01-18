@@ -179,7 +179,7 @@ class Kashing_Metabox {
                         break;
 
                     default:
-                        echo __( 'Unspecified field type', 'kashing' );
+                        echo __( 'Unsupported field type', 'kashing' );
                         break;
 
                 }

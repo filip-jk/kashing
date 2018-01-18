@@ -19,14 +19,6 @@ class Kashing_API {
     public $secret_key;
 
     /**
-     * The API public key.
-     *
-     * @var string
-     */
-
-    public $public_key;
-
-    /**
      * Merchant ID.
      *
      * @var string
@@ -66,15 +58,8 @@ class Kashing_API {
 
         // Form Submission Processing
 
-        // regular POST
-
         add_action( 'admin_post_kashing_form_submit_hook', array( $this, 'action_form_submit' ) );
         add_action( 'admin_post_nopriv_kashing_form_submit_hook', array( $this, 'action_form_submit' ) );
-
-        // AJAX
-
-        add_action( 'wp_ajax_kashing_form_submit_hook', array( $this, 'action_form_submit' ) );
-        add_action( 'wp_ajax_nopriv_kashing_form_submit_hook', array( $this, 'action_form_submit' ) );
 
         // Determine the Test Mode
 
@@ -125,20 +110,6 @@ class Kashing_API {
                 'msg' => __( 'The secret key is missing.', 'kashing' )
             ) );
         }
-
-        // Public Key
-
-//        $option_name = $option_prefix . 'pkey';
-//
-//        if ( kashing_option( $option_name ) != '' ) {
-//            $this->public_key = kashing_option( $option_name );
-//        } else {
-//            $this->add_error( array(
-//                'field' => $option_name,
-//                'type' => 'missing_field',
-//                'msg' => __( 'The public key is missing.', 'kashing' )
-//            ) );
-//        }
 
         // Merchant ID
 
@@ -279,25 +250,11 @@ class Kashing_API {
             return;
         }
 
-        // Detect if AJAX or regular POST submission
-
-        if ( isset( $_POST[ 'ajaxrequest' ] ) && $_POST[ 'ajaxrequest' ] == true ) {
-            $ajax = true;
-        } else {
-            $ajax = false;
-        }
-
         // Verify Form Nonce
 
         if ( !isset( $_POST[ 'kashing_form_nonce' ] ) || !wp_verify_nonce( $_POST[ 'kashing_form_nonce' ], 'kashing_form_nonce' ) ) {
 
-            $msg = __( 'Illegal form submission detected.', 'kashing' );
-
-            if ( $ajax == true ) { // Different error handling for AJAX
-                wp_send_json_error( $msg );
-            } else {
-                wp_die( $msg );
-            }
+            wp_die( __( 'Illegal form submission detected.', 'kashing' ) );
 
             return;
 
@@ -380,35 +337,27 @@ class Kashing_API {
 
         if ( $validation == false ) {
 
-            if ( $ajax == true ) { // Different error handling for AJAX
-                wp_send_json_error( array(
-                    'error_reason' => 'validation' // Repeate the JS validation
-                ) );
-            } else { // Regular POST
+            // Redirect to the form page
 
-                // Redirect to the form page
+            if ( isset( $_POST[ 'origin' ] ) && get_post_status( $_POST[ 'origin' ] ) ) {
+                $redirect_url = esc_url( get_permalink( $_POST[ 'origin' ] ) );
 
-                if ( isset( $_POST[ 'origin' ] ) && get_post_status( $_POST[ 'origin' ] ) ) {
-                    $redirect_url = esc_url( get_permalink( $_POST[ 'origin' ] ) );
+                // Add form error parameter
 
-                    // Add form error parameter
+                $redirect_url = add_query_arg( 'validation_error', 'yes', $redirect_url );
 
-                    $redirect_url = add_query_arg( 'validation_error', 'yes', $redirect_url );
+                // Add current field values
 
-                    // Add current field values
-
-                    foreach ( $field_values as $name => $value ) {
-                        $redirect_url = add_query_arg( $name, $value, $redirect_url );
-                    }
-
-                    // Make a redirection
-
-                    //wp_redirect( $redirect_url );
-
-                } else {
-                    wp_die( __( 'There are some missing fields in the form.', 'kashing' ) );
+                foreach ( $field_values as $name => $value ) {
+                    $redirect_url = add_query_arg( $name, $value, $redirect_url );
                 }
 
+                // Make a redirection
+
+                //wp_redirect( $redirect_url );
+
+            } else {
+                wp_die( __( 'There are some missing fields in the form.', 'kashing' ) );
             }
 
             return;
@@ -425,7 +374,13 @@ class Kashing_API {
 
         $amount = $this->get_transaction_amount( $form_id );
 
-        if ( $amount == false ) wp_send_json_error( 'No amount is provided in the form.' );
+        if ( $amount == false ) { // No amount provided in the form
+            if ( current_user_can( 'administrator' ) ) {
+                wp_die( __( 'The amount was not provided in the form settings.', 'kashing' ) );
+            } else {
+                wp_die( __( 'Something went wrong. Please contact the site administrator.', 'kashing' ) );
+            }
+        }
 
         // Currency
 
@@ -519,19 +474,10 @@ class Kashing_API {
                 if ( $response_body->results[0]->responsecode == 4 && $response_body->results[0]->reasoncode == 1 && isset( $response_body->results ) && isset( $response_body->results[0]->redirect ) ) { // We've got a redirection
 
                     // Everything is fine, redirecting the user
-
                     $redirect_url = $response_body->results[0]->redirect; // Kashing redirect URL
 
-                    $ajax_response = array(
-                        'action' => 'redirect',
-                        'redirect_url' => $redirect_url
-                    );
-
-                    if ( $ajax == true ) { // Different approach for AJAX
-                        wp_send_json_success( $ajax_response ); // Tell JS to make a redirection.
-                    } else { // Regular POST
-                        wp_redirect( esc_url( $redirect_url ) ); // Redirect to the Kashing Payment Gateway.
-                    }
+                    // Redirect to the Kashing Payment Gateway.
+                    wp_redirect( esc_url( $redirect_url ) );
 
                     return;
 
@@ -616,7 +562,7 @@ class Kashing_API {
     }
 
     /**
-     * Ajax function added to wp_ajax. Can be called with jQuery AJAX.
+     * Generates a signature for the API call
      *
      * @return string
      */
@@ -624,11 +570,9 @@ class Kashing_API {
     public function get_psign( $data_array ) {
 
         // The transaction string to be hashed: secret key + transaction data string
-
         $transaction_string = $this->secret_key . $this->extract_transaction_data( $data_array );
 
         // SHA1
-
         $psign = sha1( $transaction_string );
 
         return $psign;
@@ -758,4 +702,4 @@ class Kashing_API {
 
 }
 
-$kashing_ajax = new Kashing_API();
+$kashing_api = new Kashing_API();
