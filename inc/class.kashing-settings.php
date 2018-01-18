@@ -97,12 +97,12 @@ class Kashing_Settings {
                         'desc' => __( 'Enter your testing Kashing Secret Key.', 'kashing' ),
                         'type' => 'text'
                     ),
-                    array(
-                        'id' => 'test_pkey',
-                        'title' => __( 'Test Public Key', 'kashing' ),
-                        'desc' => __( 'Enter your testing Kashing Public Key.', 'kashing' ),
-                        'type' => 'text'
-                    ),
+//                    array(
+//                        'id' => 'test_pkey',
+//                        'title' => __( 'Test Public Key', 'kashing' ),
+//                        'desc' => __( 'Enter your testing Kashing Public Key.', 'kashing' ),
+//                        'type' => 'text'
+//                    ),
                     array(
                         'id' => 'live_merchant_id',
                         'title' => __( 'Live Merchant ID', 'kashing' ),
@@ -115,12 +115,12 @@ class Kashing_Settings {
                         'desc' => __( 'Enter your live Kashing Secret Key.', 'kashing' ),
                         'type' => 'text'
                     ),
-                    array(
-                        'id' => 'live_pkey',
-                        'title' => __( 'Live Public Key', 'kashing' ),
-                        'desc' => __( 'Enter your live Kashing Public Key.', 'kashing' ),
-                        'type' => 'text'
-                    )
+//                    array(
+//                        'id' => 'live_pkey',
+//                        'title' => __( 'Live Public Key', 'kashing' ),
+//                        'desc' => __( 'Enter your live Kashing Public Key.', 'kashing' ),
+//                        'type' => 'text'
+//                    )
                 )
             ),
             array(

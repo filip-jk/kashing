@@ -128,17 +128,17 @@ class Kashing_API {
 
         // Public Key
 
-        $option_name = $option_prefix . 'pkey';
-
-        if ( kashing_option( $option_name ) != '' ) {
-            $this->public_key = kashing_option( $option_name );
-        } else {
-            $this->add_error( array(
-                'field' => $option_name,
-                'type' => 'missing_field',
-                'msg' => __( 'The public key is missing.', 'kashing' )
-            ) );
-        }
+//        $option_name = $option_prefix . 'pkey';
+//
+//        if ( kashing_option( $option_name ) != '' ) {
+//            $this->public_key = kashing_option( $option_name );
+//        } else {
+//            $this->add_error( array(
+//                'field' => $option_name,
+//                'type' => 'missing_field',
+//                'msg' => __( 'The public key is missing.', 'kashing' )
+//            ) );
+//        }
 
         // Merchant ID
 

@@ -32,6 +32,10 @@ class Kashing_Payments {
 
         require_once KASHING_PATH . 'inc/kashing-functions.php';
 
+        // Plugin Activation Hook
+
+
+
         // Load Metabox Core
 
         $this->load_metaboxes();
