@@ -403,7 +403,7 @@ class Kashing_API {
 
                     // Make a redirection
 
-                    wp_redirect( $redirect_url );
+                    //wp_redirect( $redirect_url );
 
                 } else {
                     wp_die( __( 'There are some missing fields in the form.', 'kashing' ) );
@@ -454,9 +454,6 @@ class Kashing_API {
             'amount' => sanitize_text_field( $amount ),
             'currency' => sanitize_text_field( $currency ),
             'returnurl' => sanitize_text_field( $return_url ),
-            "ip" => "192.168.0.111",
-            "forwardedip" => "80.177.11.240",
-            "merchanturl" => "shop.test.co.uk",
             "description" => sanitize_text_field( $description )
         );
 
@@ -503,53 +500,83 @@ class Kashing_API {
         // Deal with the call response
 
         if ( is_wp_error( $response ) ) {
-            wp_die( __( 'There was something wrong with the WP API Call.', 'kashing' ) );
+            if ( current_user_can( 'administrator' ) ) {
+                wp_die( __( 'There was something wrong with the WordPress API Call.', 'kashing' ) );
+            } else {
+                wp_die( __( 'Something went wrong. Please contact the site administrator.', 'kashing' ) );
+            }
             return;
         }
 
         // Response is fine
 
-        $response_body = json_decode( $response['body'] ); // Decode the response body from JSON
-        $response_code = $reason_code = $final_response = false;
+        $response_body = json_decode( $response[ 'body' ] ); // Decode the response body from JSON
 
-        if ( is_object( $response_body ) && is_array( $response_body->results ) && !empty( $response_body->results ) ) {
+        if ( isset( $response_body->error ) && isset( $response_body->responsecode ) ) {
 
-            // Get response and reason codes
+            if ( $response_body->responsecode == 1 && isset( $response_body->results ) && isset( $response_body->results[0] ) && isset( $response_body->results[0]->responsecode ) && isset( $response_body->results[0]->reasoncode ) ) {
 
-            $response_code = $response_body->results[0]->responsecode;
-            $reason_code = $response_body->results[0]->reasoncode;
+                if ( $response_body->results[0]->responsecode == 4 && $response_body->results[0]->reasoncode == 1 && isset( $response_body->results ) && isset( $response_body->results[0]->redirect ) ) { // We've got a redirection
 
-            $final_response = array(
-                'response' => $response_code,
-                'reason' => $reason_code,
-                'merchant_id' => kashing_option( 'merchant_id' )
-            );
+                    // Everything is fine, redirecting the user
 
-            // Check response and reason codes
+                    $redirect_url = $response_body->results[0]->redirect; // Kashing redirect URL
 
-            if ( $response_code == 4 && $reason_code == 1 ) {
+                    $ajax_response = array(
+                        'action' => 'redirect',
+                        'redirect_url' => $redirect_url
+                    );
 
-                $redirect_url = $response_body->results[0]->redirect;
-                $final_response[ 'redirect' ] = $redirect_url;
+                    if ( $ajax == true ) { // Different approach for AJAX
+                        wp_send_json_success( $ajax_response ); // Tell JS to make a redirection.
+                    } else { // Regular POST
+                        wp_redirect( esc_url( $redirect_url ) ); // Redirect to the Kashing Payment Gateway.
+                    }
 
-                if ( $ajax == true ) { // Different error handling for AJAX
-                    wp_send_json_success( $final_response ); // Tell JS to make a redirection.
-                } else { // Regular POST
-                    wp_redirect( esc_url( $redirect_url ) ); // Redirect to the Kashing Payment Gateway.
+                    return;
+
+                } else { // There is no Redirect URL
+
+                    if ( current_user_can( 'administrator' ) ) {
+                        wp_die( __( 'There was something wrong with a redirection response from the Kashing server.', 'kashing' ) );
+                    } else {
+                        wp_die( __( 'Something went wrong. Please contact the site administrator.', 'kashing' ) );
+                    }
+
+                    return;
                 }
 
-                return;
+            }
+
+            // There was an error
+
+            if ( current_user_can( 'administrator' ) ) {
+
+                // We're going to display the site administrator as many details as possible
+
+                $response_msg = __( 'There was an error with the Kashing API call', 'kashing' ) . ':<br>';
+                $response_msg .= '<br><strong>Response Code:</strong> ' . $response_body->responsecode;
+                $response_msg .= '<br><strong>Reason Code:</strong> ' . $response_body->reasoncode;
+                $response_msg .= '<br><strong>Error:</strong> ' . $response_body->error;
+
+                // Additional suggestion based on the error type
+
+                $suggestion = $this->get_api_error_suggestion( $response_body->responsecode, $response_body->reasoncode );
+
+                if ( $suggestion != false ) {
+                    $response_msg .= '<br><strong>' . __( 'Suggestion', 'kashing' ) . ':</strong> ' . $suggestion;
+                }
+
+                // Add plugin URL
+
+                $response_msg .= '<br><br><a href="' . esc_url( admin_url( 'edit.php?post_type=kashing&page=kashing-settings' ) ) . '">' . __( 'Visit Plugin Settings', 'kashing' ). '</a>';
+
+                // Display a full response to the site admin
+
+                wp_die( $response_msg );
 
             } else {
-
-                if ( $ajax == true ) { // Different error handling for AJAX
-                    wp_send_json_error( array(
-                        'error_reason' => 'api_call'
-                    ) );
-                } else { // Regular POST
-                    wp_die( 'Error. Response: ' . $response_code . ', Reason: ' . $reason_code );
-                }
-
+                wp_die( __( 'Something went wrong. Please contact the site administrator.', 'kashing' ) );
             }
 
             return;
@@ -559,6 +586,32 @@ class Kashing_API {
         wp_die( __( 'There was something wrong with the Kashing response.', 'kashing' ) );
 
         return;
+
+    }
+
+    /**
+     * Additional suggestion for the plugin administrator based on the response and reason code from Kashing API.
+     *
+     * @param int
+     * @param int
+     *
+     * @return string
+     */
+
+    public function get_api_error_suggestion( $response_code, $reason_code ) {
+
+        if ( $response_code == 3 ) {
+            switch ( $reason_code ) {
+                case 9:
+                    return __( 'Please make sure your Merchant ID is correct.', 'kashing' );
+                    break;
+                case 104:
+                    return __( 'Please make sure that your Secret API Key and Merchant ID are correct.', 'kashing' );
+                    break;
+            }
+        }
+
+        return '';
 
     }
 

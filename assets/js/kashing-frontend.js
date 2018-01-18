@@ -32,8 +32,8 @@
                         //validServerData();
 
                         console.log( response );
-                        if ( response.data.redirect != '' ) {
-                            window.location.href = response.data.redirect;
+                        if ( response.data.redirect_url != '' ) {
+                            //window.location.href = response.data.redirect_url;
                         }
                     } else { // The API Call went wrong
                         alert( 'ERROR' );
@@ -47,7 +47,7 @@
 
                         // invalidServerData( resp );
 
-                        console.log( resp );
+                        console.log( response );
                     }
                 }
             }).fail( function() {

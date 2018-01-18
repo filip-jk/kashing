@@ -36,10 +36,6 @@ class Kashing_Payments {
 
         $this->load_metaboxes();
 
-        // Plugin Options Page
-
-        $this->settings_page();
-
         // Plugin scripts and styles
 
         add_action( 'admin_enqueue_scripts', array( $this, 'action_admin_enqueue_scripts' ) );
@@ -63,11 +59,16 @@ class Kashing_Payments {
 
         // Helpers
 
-        require_once KASHING_PATH . 'inc/helpers/currency/kashing-currency.php'; // Currency
-        require_once KASHING_PATH . 'inc/helpers/countries/kashing-countries.php'; // Countries
+        require_once KASHING_PATH . 'inc/helpers/currency/class.kashing-currency.php'; // Currency
+        require_once KASHING_PATH . 'inc/helpers/countries/class.kashing-countries.php'; // Countries
 
-        // Fields Class
-        require_once KASHING_PATH . 'inc/kashing-fields.php';
+        // Kashing Form Fields
+
+        require_once KASHING_PATH . 'inc/class.kashing-fields.php';
+
+        // Plugin Options Page
+
+        $this->settings_page();
 
     }
 
@@ -77,7 +78,7 @@ class Kashing_Payments {
 
     private function load_metaboxes() {
 
-        require_once KASHING_PATH . 'inc/metaboxes.php';
+        require_once KASHING_PATH . 'inc/class.kashing-metaboxes.php';
 
     }
 
@@ -87,7 +88,7 @@ class Kashing_Payments {
 
     private function settings_page() {
 
-        require_once KASHING_PATH . 'inc/kashing-settings.php';
+        require_once KASHING_PATH . 'inc/class.kashing-settings.php';
 
     }
 
@@ -142,12 +143,13 @@ class Kashing_Payments {
 
         wp_enqueue_style( 'kashing-admin', plugin_dir_url( __FILE__ ) . 'assets/css/kashing-admin.css' );
         wp_enqueue_script( 'kashing-backend-js', plugin_dir_url( __FILE__ ) . 'assets/js/kashing-backend.js', array( 'jquery' ) );
-        //wp_enqueue_script( 'kashing-metaboxes-js', plugin_dir_url( __FILE__ ) . 'assets/js/kashing-metaboxes.js', array( 'jquery' ) );
+
         wp_localize_script(
             'kashing-backend-js',
-            'post_types_wp_object',
+            'kashing_wp_object',
             array(
-                'wp_ajax_url' => admin_url( 'admin-ajax.php' )
+                'wp_ajax_url' => admin_url( 'admin-ajax.php' ),
+                'msg_missing_field' => __( 'This field is required.', 'kashing' )
             )
         );
 
@@ -182,7 +184,7 @@ class Kashing_Payments {
 
     private function load_shortcodes() {
 
-        require_once KASHING_PATH . 'inc/kashing-shortcodes.php';
+        require_once KASHING_PATH . 'inc/class.kashing-shortcodes.php';
 
     }
 
@@ -192,7 +194,7 @@ class Kashing_Payments {
 
     public function plugin_ajax() {
 
-        require_once KASHING_PATH . 'inc/kashing-api.php';
+        require_once KASHING_PATH . 'inc/class.kashing-api.php';
 
     }
 

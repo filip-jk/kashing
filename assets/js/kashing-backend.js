@@ -10,7 +10,7 @@
         $( '#add-kashing-form' ).on( 'click', function() {
 
             $.ajax ({
-                url: post_types_wp_object.wp_ajax_url,
+                url: kashing_wp_object.wp_ajax_url,
                 type: 'POST',
                 dataType: 'JSON',
                 data: {
@@ -64,6 +64,8 @@
 
             var value = $( this ).val();
 
+            value = value.replace(/[^\d,.]/g, ''); // Remove letters
+
             //so we can use commas too
 
             if ( value.indexOf( ',' ) !== -1 ) {
@@ -84,9 +86,24 @@
                 value = Number( value );
                 value = value.toFixed( 2 );
 
-                $( this ).val( value );
+                //$( this ).val( value );
             }
 
+            $(this).val( value );
+
+        });
+
+        // Required field left empty
+
+        $( '.kashing-admin-form .required-field input, .kashing-admin-form .required-field textarea' ).on( 'focusout', function() {
+            if ( $(this).val() == '' ) {
+                $(this).closest('.kashing-input').append('<span class="kashing-error required-field">' + kashing_wp_object.msg_missing_field + '</span>');
+                $(this).closest('.kashing-field').addClass('has-errors');
+            } else {
+                $(this).closest('.kashing-input').find('.kashing-error').remove();
+                $(this).closest('.kashing-field').removeClass('has-errors');
+                return;
+            }
         });
 
     });

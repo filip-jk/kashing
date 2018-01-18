@@ -4,6 +4,8 @@ if ( !function_exists( 'kashing_form_shortcode' ) ) {
 
     function kashing_form_shortcode( $atts, $content ) {
 
+        $form_id = '';
+
         extract( shortcode_atts( array(
             "form_id" => '',
         ), $atts ) );
@@ -37,154 +39,69 @@ if ( !function_exists( 'kashing_form_shortcode' ) ) {
 
             <form id="kashing-form" class="kashing-form" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" method="POST">
 
-            <?php
-
-            $form_fields = new Kashing_Fields();
-
-	        $form_fields_data = $form_fields->get_all_fields();
-
-	            // echo $_GET['lastname'];
-	            //$parts = parse_url($url);
-	            //echo print_r($_GET);
-	            //echo $_GET;
-
-                foreach ( $_GET as $key => $values ) {
-
-                    echo $key;
-                    echo $value;
-
-                }
-                
-
-                foreach ( $form_fields_data as $field_data) {
-
-                    $name_data = $field_data[ 'name' ];
-                    $id_data = 'kashing-' . $name_data;
-	                $type_data = 'text' ;
-
-                    if( isset( $field_data[ 'type' ] ) ) {
-                        $type_data = $field_data[ 'type' ];
-                    }
-
-
-
-                    //if ( get_post_meta($form_id, $prefix . 'address2', true) == true ) {
-
-	                    ?>
-                        <div class="input-holder">
-                        <label for= <?php $id_data;?> ><?php esc_html_e('First Name', 'kashing'); ?></label>
-                        <input type= <?php $type_data;?> name= <?php $name_data;?>
-                               id= <?php $id_data;?> class="kashing-required-field" value= <?php $_GET['$name_data'];?> >
-                        </div>
-	                    <?php
-                    //}
-
-                }
-
-
-                // walidacja
-                // polaczenie z klasa
-                // sprawdzenie czy pole ma byc dodane to w petli
-                //dodanie z GETa
-		        ?>
-
-                <div class="input-holder">
-                    <label for="kashing-firstname"><?php esc_html_e('First Name', 'kashing'); ?></label>
-                    <input type="text" name="firstname" id="kashing-firstname" class="kashing-required-field" value="Ten">
-                </div>
-
-                <div class="input-holder">
-                    <label for="kashing-lastname"><?php esc_html_e('Last Name', 'kashing'); ?></label>
-                    <input type="text" name="lastname" id="kashing-lastname" class="kashing-required-field" value="Green" required>
-                </div>
-
-                <div class="input-holder">
-                    <label for="kashing-address1"><?php esc_html_e('Address 1', 'kashing'); ?></label>
-                    <input type="text" name="address1" id="kashing-address1" class="kashing-required-field" value="Flat 6 Primrose Rise" required>
-                </div>
-
                 <?php
 
-                // Check if the address2 field is enabled in the form meta options.
+                $kashing_fields = new Kashing_Fields();
+                $form_fields = $kashing_fields->get_all_fields(); // Get all form fields
 
-                if ( get_post_meta($form_id, $prefix . 'address2', true) == true ) {
+                foreach ( $form_fields as $field_name => $field_data ) { // Loop through each form field
 
-                    ?>
+                    // Check if required
 
-                    <div class="input-holder">
-                        <label for="kashing-address2"><?php esc_html_e('Address 2', 'kashing'); ?></label>
-                        <input type="text" name="address2" id="kashing-address2">
-                    </div>
+                    if ( array_key_exists( 'required', $field_data ) && $field_data[ 'required' ] == true ) {
+                        $required = true;
+                    } else {
+                        $required = false;
 
-                    <?php
+                        // Check if the optional field should be displayed (set in the form post meta)
 
-                } // End address2 field check
-
-                // Check if the address2 field is enabled in the form meta options.
-
-                if ( get_post_meta($form_id, $prefix . 'email', true) == true ) {
-
-                    ?>
-
-                    <div class="input-holder">
-                        <label for="kashing-address2"><?php esc_html_e('Email', 'kashing'); ?></label>
-                        <input type="text" name="email" id="kashing-email">
-                    </div>
-
-                    <?php
-
-                } // End address2 field check
-
-                // Check if the address2 field is enabled in the form meta options.
-
-                if ( get_post_meta($form_id, $prefix . 'phone', true) == true ) {
-
-                    ?>
-
-                    <div class="input-holder">
-                        <label for="kashing-address2"><?php esc_html_e('Phone', 'kashing'); ?></label>
-                        <input type="text" name="phone" id="kashing-phone">
-                    </div>
-
-                    <?php
-
-                } // End address2 field check
-
-                ?>
-
-                <div class="input-holder">
-                    <label for="kashing-city"><?php esc_html_e('City', 'kashing'); ?></label>
-                    <input type="text" name="city" id="kashing-city" class="kashing-required-field" value="Northampton" required'>
-                </div>
-
-                <div class="input-holder">
-                    <label for="kashing-postcode"><?php esc_html_e('Post Code', 'kashing'); ?></label>
-                    <input type="text" name="postcode" id="kashing-postcode" class="kashing-required-field" value="12-123" required'>
-                </div>
-
-                <div class="input-holder">
-                    <label for="kashing-country"><?php esc_html_e( 'Country', 'kashing' ); ?></label>
-                    <select name="country" id="kashing-country" class="kashing-required-field" >
-                        <?php
-
-                        $kashing_countries = new Kashing_Countries();
-
-                        $countries = $kashing_countries->get_all();
-
-
-                        foreach( $countries as $country_code => $country_name ) {
-                            if($country_code === 'UK') {
-                                echo '<option value="' . esc_attr( $country_code ) . '" selected >' . esc_html( $country_name ) . '</option>';
-                            } else {
-                                echo '<option value="' . esc_attr( $country_code ) . '">' . esc_html( $country_name ) . '</option>';
-                            }
+                        if ( get_post_meta( $form_id, $prefix . $field_name, true  ) == false ) {
+                            continue; // Do not display the field
                         }
 
-                        ?>
-                    </select>
-                </div>
+                    }
 
-                <?php
+                    // Get the field type
+
+                    if ( array_key_exists( 'type', $field_data ) && $field_data[ 'type' ] == 'email' ) {
+                        $field_type = 'email';
+                    } else {
+                        $field_type = 'text';
+                    }
+
+                    // Check if this is a response from the Admin Post, if so, make a validation
+
+                    $value = $error_class = $error_msg = '';
+
+                    if ( isset( $_GET ) && isset( $_GET[ 'validation_error'] ) ) {
+                        //$value = $_GET[ $field[ 'name' ] ]; // TODO MAKE VALIDATION
+
+                        if ( isset( $_GET[ $field_name ] ) ) {
+                            $value = $_GET[ $field_name ];
+                        }
+
+                        $validate = $kashing_fields->validate_field( $field_name, $value ); // Returns an array
+
+                        if ( $validate[ 'validated' ] == false ) { // There is a validation error
+                            $error_class = ' validation-error';
+                            $error_msg = $validate[ 'error_msg' ];
+                        }
+
+                    }
+
+                    // Field output
+
+                    $field_id = 'kashing-' . $field_name;
+
+                    echo '<div class="input-holder' . $error_class . '">';
+                    echo '<label for="' . esc_attr( $field_id ) . '">' . esc_html( $field_data[ 'label' ] ) . '</label>';
+                    echo '<input type="' . esc_attr( $field_type ) . '" id="' . esc_attr( $field_id ) . '" name="' . esc_attr( $field_name ) . '" class="kashing-field" value="' . esc_html( $value ) . '"';
+                    if ( $required == true ) echo ' required';
+                    echo '>'; // End <input>
+                    if ( $error_msg != '' ) echo '<div class="kashing-form-error-msg">' . esc_html( $error_msg ) . '</div>';
+                    echo '</div>';
+
+                }
 
                 // Form nonce
 
