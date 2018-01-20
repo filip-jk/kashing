@@ -30,7 +30,8 @@ class Kashing_Fields {
             ),
             'lastname' => array(
                 'label' => __( 'Last Name', 'kashing' ),
-                'type' => 'text'
+                'type' => 'text',
+                'required' => true
             ),
             'address1' => array(
                 'label' => __( 'Address 1', 'kashing' ),
@@ -44,6 +45,12 @@ class Kashing_Fields {
             'city' => array(
                 'label' => __( 'City', 'kashing' ),
                 'type' => 'text',
+                'required' => true
+            ),
+            'country' => array(
+                'label' => __( 'Country', 'kashing' ),
+                'type' => 'select',
+                'options' => 'countries',
                 'required' => true
             ),
             'postcode' => array(

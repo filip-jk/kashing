@@ -67,6 +67,12 @@ class Kashing_Metaboxes {
                     'type' => 'checkbox',
                 ),
                 array(
+                    'id' => $prefix . 'country',
+                    'title' => __( 'Country', 'kashing' ),
+                    'desc' => __( 'Enable the "Country" field.', 'kashing' ),
+                    'type' => 'checkbox',
+                ),
+                array(
                     'id' => $prefix . 'email',
                     'title' => __( 'Email', 'kashing' ),
                     'desc' => __( 'Enable the "Email" field.', 'kashing' ),

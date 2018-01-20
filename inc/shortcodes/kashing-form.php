@@ -31,9 +31,9 @@ if ( !function_exists( 'kashing_form_shortcode' ) ) {
 
         ob_start();
 
-        global $kashing_configuration_errors;
+        $kashing_api = new Kashing_API();
 
-        if ( $kashing_configuration_errors != true && $form_id != '' ) { // There are no configuration errors, display the form.
+        if ( $kashing_api->has_errors == false && $form_id != '' ) { // There are no configuration errors, display the form.
 
             ?>
 
@@ -48,11 +48,14 @@ if ( !function_exists( 'kashing_form_shortcode' ) ) {
 
                     // Check if required
 
+                    $required_attr = '';
+
                     if ( array_key_exists( 'required', $field_data ) && $field_data[ 'required' ] == true ) {
                         $required = true;
+                        $required_attr = ' required';
                     } else {
                         $required = false;
-
+                        $required_attr = '';
                         // Check if the optional field should be displayed (set in the form post meta)
 
                         if ( get_post_meta( $form_id, $prefix . $field_name, true  ) == false ) {
@@ -63,8 +66,8 @@ if ( !function_exists( 'kashing_form_shortcode' ) ) {
 
                     // Get the field type
 
-                    if ( array_key_exists( 'type', $field_data ) && $field_data[ 'type' ] == 'email' ) {
-                        $field_type = 'email';
+                    if ( isset( $field_data['type'] ) ) {
+                        $field_type = $field_data['type'];
                     } else {
                         $field_type = 'text';
                     }
@@ -74,7 +77,6 @@ if ( !function_exists( 'kashing_form_shortcode' ) ) {
                     $value = $error_class = $error_msg = '';
 
                     if ( isset( $_GET ) && isset( $_GET[ 'validation_error'] ) ) {
-                        //$value = $_GET[ $field[ 'name' ] ]; // TODO MAKE VALIDATION
 
                         if ( isset( $_GET[ $field_name ] ) ) {
                             $value = $_GET[ $field_name ];
@@ -94,11 +96,42 @@ if ( !function_exists( 'kashing_form_shortcode' ) ) {
                     $field_id = 'kashing-' . $field_name;
 
                     echo '<div class="input-holder' . $error_class . '">';
+
+                    // Field label
+
                     echo '<label for="' . esc_attr( $field_id ) . '">' . esc_html( $field_data[ 'label' ] ) . '</label>';
-                    echo '<input type="' . esc_attr( $field_type ) . '" id="' . esc_attr( $field_id ) . '" name="' . esc_attr( $field_name ) . '" class="kashing-field" value="' . esc_html( $value ) . '"';
-                    if ( $required == true ) echo ' required';
-                    echo '>'; // End <input>
+
+                    // Field input
+
+                    if ( $field_type == 'select' && isset( $field_data['options'] ) ) {
+
+                        echo '<select id="' . esc_attr( $field_id ) . '" name="' . esc_attr( $field_name ) . '"' . $required_attr . '>';
+                        echo '<option disabled selected value> -- ' . esc_html( 'Select a country', 'kashing' ) . ' -- </option>';
+
+                        // Get options
+
+                        if ( is_array( $field_data['options'] ) ) {
+                            $select_options = $field_data['options'];
+                        } elseif ( $field_data['options'] == 'countries' ) {
+                            $kashing_countries = new Kashing_Countries;
+                            $select_options = $kashing_countries->get_all();
+                        }
+
+                        // Loop through options
+
+                        foreach ( $select_options as $option_value => $label ) {
+                            $selected = ( checked( $value, $option_value, false ) == true ) ? ' selected="selected"' : '';
+                            echo '<option value="' . esc_attr( $option_value ) . '"' . $selected . '>' . esc_html( $label ) . '</option>';
+                        }
+
+                        echo '</select>';
+
+                    } else {
+                        echo '<input type="' . esc_attr( $field_type ) . '" id="' . esc_attr( $field_id ) . '" name="' . esc_attr( $field_name ) . '" class="kashing-field" value="' . esc_html( $value ) . '"' . $required_attr . '>'; // End <input>
+                    }
+
                     if ( $error_msg != '' ) echo '<div class="kashing-form-error-msg">' . esc_html( $error_msg ) . '</div>';
+
                     echo '</div>';
 
                 }
@@ -114,21 +147,35 @@ if ( !function_exists( 'kashing_form_shortcode' ) ) {
                 <input type="hidden" name="kashing_form_nonce" value="<?php echo $kashing_form_nonce; ?>">
                 <input type="hidden" name="action" value="kashing_form_submit_hook">
 
-                <button class="button btn" id="kashing-pay" type="submit"><?php esc_html_e('Pay with Kashing', 'kashing'); ?></button>
+                <button class="button btn kashing-submit-button" type="submit"><?php esc_html_e('Pay with Kashing', 'kashing'); ?></button>
+                <?php
 
+                if ( $kashing_api->test_mode == true ) { // Display a little notice regarding the test mode.
+                    echo '<span class="kashing-test-mode-notice">' . __( 'Test mode enabled.', 'kashing' ) . '</span>';
+                }
+
+                ?>
             </form>
 
             <?php
 
         } else {
 
-            echo 'There are errors:';
+            echo '<div class="kashing-frontend-errors"><p>';
 
-            $kashing_api = new Kashing_API();
+            if ( current_user_can( 'administrator' ) && isset( $kashing_api->errors ) ) {
+                echo '<strong>' . __( 'Kashing Payments plugin configuration errors: ', 'kashing' ) . '</strong>';
+                foreach ( $kashing_api->errors as $error ) {
+                    if ( isset( $error['msg'] ) ) {
+                       echo '<br>' . esc_html( $error[ 'msg' ] );
+                    }
+                }
+                echo '</p><a href="' . esc_url( admin_url( 'edit.php?post_type=kashing&page=kashing-settings' ) ) . '" target="_blank">' . __( 'Visit the plugin settings', 'kashing' ). '</a>';
+            } else {
+                esc_html_e( 'There are some Kashing Payments plugin configuration errors.', 'kashing' );
+            }
 
-            echo '<pre>';
-            var_dump( $kashing_api->errors );
-            echo '</pre>';
+            echo '</div>';
 
         }
 

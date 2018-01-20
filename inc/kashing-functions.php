@@ -6,6 +6,14 @@
  * @return string
  */
 
+/**
+ * Helper function to easily grab a plugin option from the options array.
+ *
+ * @param string
+ *
+ * @return string
+ */
+
 if ( !function_exists( 'kashing_option' ) ) {
     function kashing_option( $option_name ) {
 
@@ -21,7 +29,27 @@ if ( !function_exists( 'kashing_option' ) ) {
 }
 
 /**
- * Helper function to easily grab a plugin option from the options array.
+ * Helper function to programatically update plugin settings.
+ *
+ * @param string
+ * @param string
+ */
+
+if ( !function_exists( 'kashing_update_option' ) ) {
+    function kashing_update_option( $option_name, $new_value ) {
+
+        $options = get_option( 'kashing' );
+
+        if ( is_array( $options ) ) {
+            $options[ $option_name ] = esc_attr( $new_value ); // Each option has a prefix
+            update_option( 'kashing', $options );
+        }
+
+    }
+}
+
+/**
+ * Grab the currently set currency.
  *
  * @return string
  */

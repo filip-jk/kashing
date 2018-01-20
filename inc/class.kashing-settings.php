@@ -64,6 +64,14 @@ class Kashing_Settings {
 
         $kashing_currency = new Kashing_Currency();
 
+        // Check if settings array exists
+
+        if ( false == get_option( $this->opt_name ) || !is_array( get_option( $this->opt_name) ) ) {
+            add_option( $this->opt_name );
+            $options = array();
+            update_option( $this->opt_name, $options );
+        }
+
         // Declare setting fields
 
         $kashing_api_key_docs = 'http://kashing.com/docs/how-to-get-api-key.html';
@@ -76,7 +84,7 @@ class Kashing_Settings {
                     array(
                         'id' => 'test_mode',
                         'title' => __( 'Test Mode', 'kashing' ),
-                        'desc' => __( 'Activate or deactivate the plugin Test Mode. When Test Mode is activated, no credit card payments are processed.', 'kashing' ) . '<span class="kashing-extra-tip"><a href="' . esc_url( $kashing_api_key_docs ) . '" target="_blank">' . __( 'Retrieve your Kashing API Keys', 'kashing' ) . '</a></span>',
+                        'desc' => __( 'Activate or deactivate the plugin Test Mode. When Test Mode is activated, no credit card payments are processed.', 'kashing' ) . '<span class="kashing-extra-tip"><a href="' . esc_url( $kashing_api_key_docs ) . '" target="_blank" class="button">' . __( 'Retrieve your Kashing API Keys', 'kashing' ) . '</a></span>',
                         'type' => 'radio',
                         'options' => array(
                             'yes' => __( 'Yes', 'kashing' ),
@@ -174,6 +182,7 @@ class Kashing_Settings {
 
         <div class="wrap">
             <h1><?php esc_html_e( 'Kashing Payments Settings', 'kashing' ); ?></h1>
+            <?php settings_errors(); ?>
             <form method="post" action="options.php" class="kashing-admin-form">
 
                 <?php
@@ -212,6 +221,10 @@ class Kashing_Settings {
 
     }
 
+    /**
+     * Render the plugin settings tabbed navigation.
+     */
+
     public function render_settings_nav() {
 
         ?>
@@ -241,12 +254,6 @@ class Kashing_Settings {
      */
 
     public function init_plugin_settings() {
-
-        // WP option check
-
-        if ( false == get_option( $this->opt_name ) ) {
-            add_option( $this->opt_name );
-        }
 
         // Register sections and fields
 
@@ -393,14 +400,15 @@ class Kashing_Settings {
 
     public function render_option_field( $field ) {
 
-        $value = '';
+        // Just another check for the first plugin activation
 
         $options = get_option( $this->opt_name );
+        $value = '';
 
         if ( isset( $options[ $field['id'] ] ) ) {
             $value = $options[ $field['id'] ];
-        } elseif ( isset( $field['default'] ) ) { // Set a default value if provided
-            $options[ $field['id'] ] = $value = $field['default'];
+        } elseif ( isset( $field['default'] ) && isset( $field['id'] ) ) { // Set a default value if provided
+            $options[ 'test_mode' ] = $value = $field['default'];
             update_option( $this->opt_name, $options );
         }
 
@@ -480,7 +488,9 @@ function kashing_get_pages_array() {
 
     $all_pages = get_pages();
 
-    foreach( $all_pages as $page ) {
+    if ( !is_array( $all_pages ) || !isset( $all_pages ) ) return $pages;
+
+    foreach ( $all_pages as $page ) {
         $pages[ $page->ID ] = $page->post_title;
     }
 

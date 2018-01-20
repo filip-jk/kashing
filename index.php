@@ -18,7 +18,17 @@ if ( ! defined( 'WPINC' ) ) {
 
 define( 'KASHING_PATH', dirname(__FILE__) . '/' );
 
+/**
+ * Main plugin class.
+ */
+
 class Kashing_Payments {
+
+    /**
+     * The general plugin prefix.
+     *
+     * @var string
+     */
 
     public static $data_prefix = 'ksng-'; // Taki prefix uzywamy do nazw funkcji
 
@@ -29,114 +39,87 @@ class Kashing_Payments {
     function __construct() {
 
         // Kashing Functions
-
         require_once KASHING_PATH . 'inc/kashing-functions.php';
 
-        // Plugin Activation Hook
+        // Plugin Setup Related
+        $this->plugin_setup();
 
-
-
-        // Load Metabox Core
-
-        $this->load_metaboxes();
+        // Load Metaboxes
+        require_once KASHING_PATH . 'inc/class.kashing-metaboxes.php';
 
         // Plugin scripts and styles
-
         add_action( 'admin_enqueue_scripts', array( $this, 'action_admin_enqueue_scripts' ) );
         add_action( 'wp_enqueue_scripts', array( $this, 'action_wp_enqueue_scripts' ) );
 
-        // Register custom post types
-
-        $this->register_post_type();
-
-        // Load Metaboxes
-
-        $this->load_metaboxes();
+        // Custom post type
+        require_once KASHING_PATH . 'inc/class.kashing-post-type.php';
 
         // Load Shortcodes
-
-        $this->load_shortcodes();
+        require_once KASHING_PATH . 'inc/class.kashing-shortcodes.php';
 
         // Init Ajax
-
-        $this->plugin_ajax();
+        require_once KASHING_PATH . 'inc/class.kashing-api.php';
 
         // Helpers
-
         require_once KASHING_PATH . 'inc/helpers/currency/class.kashing-currency.php'; // Currency
         require_once KASHING_PATH . 'inc/helpers/countries/class.kashing-countries.php'; // Countries
 
         // Kashing Form Fields
-
         require_once KASHING_PATH . 'inc/class.kashing-fields.php';
 
         // Plugin Options Page
-
-        $this->settings_page();
-
-    }
-
-    /**
-     * Load Metaboxes.
-     */
-
-    private function load_metaboxes() {
-
-        require_once KASHING_PATH . 'inc/class.kashing-metaboxes.php';
-
-    }
-
-    /**
-     * Plugin Options Page.
-     */
-
-    private function settings_page() {
-
         require_once KASHING_PATH . 'inc/class.kashing-settings.php';
 
     }
 
     /**
-     * Register the main Kashing custom post type.
+     * General plugin setup.
      */
 
-    private function register_post_type() {
+    public function plugin_setup() {
 
-        add_action( 'init', array( $this, 'action_register_post_type_kashing' ) );
+        // Plugin activation hook
+        register_activation_hook( __FILE__, array( $this, 'plugin_activation_hook' ) );
+
+        // Plugin additional links
+        add_filter( 'plugin_action_links_' . plugin_basename(__FILE__ ), array( $this, 'plugin_action_links' ) );
+
+        // Custom page states (failure and success pages)
+        add_filter( 'display_post_states', array( $this, 'custom_page_states' ), 10, 2 );
 
     }
 
     /**
-     * Custom post type registration action.
+     * Plugin additional action links.
+     *
+     * @param array
+     *
+     * @return array
      */
 
-    public function action_register_post_type_kashing() { // Must be public so it can be accessed by WordPress add_action()
+    public function plugin_action_links( $links ) {
+        $links[] = '<a href="'. esc_url( get_admin_url(null, 'edit.php?post_type=kashing&page=kashing-settings') ) .'">' . esc_html__( 'Settings', 'kashing' ) . '</a>';
+        return $links;
+    }
 
-        $args = array(
-            'label' => __( 'Kashing', 'kashing' ),
-            'public' => true,
-            'show_ui' => true,
-            'capability_type' => 'post',
-            'hierarchical' => true,
-            'has_archive' => false,
-            'menu_icon' => 'dashicons-tickets-alt',
-            'supports' => array( 'title' ),
-            'exclude_from_search' => true,
-            'show_in_nav_menus' => false,
-            'show_in_menu' => true,
-            'show_in_admin_bar' => false,
-            'has_archive' => false,
-            'public' => false,
-            'publicly_queryable' => true,
-            'rewrite' => false,
-            'labels' => array(
-                'add_new' => __( 'Add New Form', 'kashing' ),
-                'all_items' => __( 'View Forms', 'kashing' )
-            )
-        );
+    /**
+     * Registering custom post states for pages (Failure and Success pages).
+     *
+     * @param array
+     * @param int
+     *
+     * @return array
+     */
 
-        register_post_type( 'kashing' , $args );
+    public function custom_page_states( $states, $post ) {
 
+        if ( $post->ID == kashing_option( 'success_page' ) && 'page' == get_post_type( $post->ID ) ) {
+            $states[] = __( 'Payment Success', 'kashing' );
+        } elseif ( $post->ID == kashing_option( 'failure_page' ) && 'page' == get_post_type( $post->ID ) ) {
+            $states[] = __( 'Payment Failure', 'kashing' );
+        }
+
+        return $states;
     }
 
     /**
@@ -147,6 +130,8 @@ class Kashing_Payments {
 
         wp_enqueue_style( 'kashing-admin', plugin_dir_url( __FILE__ ) . 'assets/css/kashing-admin.css' );
         wp_enqueue_script( 'kashing-backend-js', plugin_dir_url( __FILE__ ) . 'assets/js/kashing-backend.js', array( 'jquery' ) );
+
+        // Localize backend scripts
 
         wp_localize_script(
             'kashing-backend-js',
@@ -166,7 +151,6 @@ class Kashing_Payments {
     public function action_wp_enqueue_scripts() {
 
         wp_enqueue_style( 'kashing-frontend-css', plugin_dir_url( __FILE__ ) . 'assets/css/kashing-frontend.css' );
-        
         wp_enqueue_script( 'kashing-frontend-js', plugin_dir_url( __FILE__ ) . 'assets/js/kashing-frontend.js', array( 'jquery' ) );
 
         // Localize the frontend JavaScript
@@ -176,29 +160,58 @@ class Kashing_Payments {
             'kashing_wp_object',
             array(
                 'wp_ajax_url' => admin_url( 'admin-ajax.php' ),
-                'page_id' => get_the_ID()
+                'page_id' => get_the_ID(),
+                'msg_missing_field' => __( 'This field is required.', 'kashing' ),
+                'msg_invalid_email' => __( 'Please provide a valid e-mail address.', 'kashing' )
             )
         );
 
     }
 
     /**
-     * Load shortcodes.
+     * Plugin activation hook. Runs whenever the plugin is being activated.
      */
 
-    private function load_shortcodes() {
+    public function plugin_activation_hook() {
 
-        require_once KASHING_PATH . 'inc/class.kashing-shortcodes.php';
+        // Plugin Options Page
+        require_once KASHING_PATH . 'inc/class.kashing-settings.php';
 
-    }
+        // Check if payment success page is set, if not, create a new one (either if a page with this title is
 
-    /**
-     * Plugin ajax related.
-     */
+        if ( kashing_option( 'success_page' ) == null || get_post_status( kashing_option( 'success_page' ) ) === false ) {
+            $page_args = array(
+                'post_title' => __( 'Payment Success', 'kashing' ),
+                'post_content' => 'Example content',
+                'post_status' => 'publish',
+                'post_type' => 'page'
+            );
+            $new_page_id = wp_insert_post( $page_args );
+            if ( $new_page_id != 0 ) {
+                kashing_update_option( 'success_page', $new_page_id ); // Update the Plugin Settings option
+            }
+        }
 
-    public function plugin_ajax() {
+        // Same for the payment failure page
 
-        require_once KASHING_PATH . 'inc/class.kashing-api.php';
+        if ( kashing_option( 'failure_page' ) == null || get_post_status( kashing_option( 'failure_page' ) ) === false ) {
+            $page_args = array(
+                'post_title' => __( 'Payment Failure', 'kashing' ),
+                'post_content' => 'Example content',
+                'post_status' => 'publish',
+                'post_type' => 'page'
+            );
+            $new_page_id = wp_insert_post( $page_args );
+            if ( $new_page_id != 0 ) {
+                kashing_update_option( 'failure_page', $new_page_id ); // Update the Plugin Settings option
+            }
+        }
+
+        // Just in case, set default plugin setting values (Currency for now)
+
+        if ( ! kashing_option( 'currency' ) ) {
+            kashing_update_option( 'currency', 'GBP' );
+        }
 
     }
 

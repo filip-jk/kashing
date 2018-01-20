@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Kashing Payment Complete shortcode.
+ * Kashing Payment success shortcode. Display some extra details for admin users.
  *
  */
 
@@ -9,35 +9,29 @@ if ( !function_exists( 'kashing_payment_success' ) ) {
 
     function kashing_payment_success( $atts, $content ) {
 
-        extract( shortcode_atts( array(
-            "some_attr" => '',
-        ), $atts ) );
+        $output = '';
 
+        // Check if this is indeed a return from a gateway.
 
-        $content = '<br><br>';
+        if ( $_GET[ 'kTransactionID' ] && current_user_can( 'administrator' ) ) {
 
-        if ( $_GET[ 'kTransactionID' ] ) { // Retrieve parameters from the URL
-            $content .= '<br>Transaction ID: ' . esc_html( $_GET[ 'kTransactionID' ] );
-        } else {
-            return;
+            // Display some extra information for an admin user.
+
+            $output .= '<div class="kashing-frontend-notice kashing-success">';
+            $output .= '<p><strong>' . __( 'Kashing payment successful!', 'kashing' ) . '</strong></p><p>' . __( 'Transaction details', 'kashing' ) . ':</p><ul>';
+            $output .= '<li>' . __( 'Transaction ID', 'kashing' ) . ': <strong>' . esc_html( $_GET[ 'kTransactionID' ] ) . '</strong></li>';
+            if ( $_GET[ 'kResponse' ] ) {
+                $output .= '<li>' . __( 'Response Code', 'kashing' ) . ': <strong>' . esc_html( $_GET[ 'kResponse' ] ) . '</strong></li>';
+            }
+            if ( $_GET[ 'kReason' ] ) {
+                $output .= '<li>' . __( 'Reason Code', 'kashing' ) . ': <strong>' . esc_html( $_GET[ 'kReason' ] ) . '</strong></li>';
+            }
+            $output .= '</ul><p>' . __( 'This notice is displayed to site administrators only.', 'kashing' ) . '</p>';
+            $output .= '</div>';
+
         }
 
-        if ( $_GET[ 'kResponse' ] ) {
-            $content .= '<br>Response: ' . esc_html( $_GET[ 'kResponse' ] );
-        }
-
-        if ( $_GET[ 'kReason' ] ) {
-            $content .= '<br>Reason: ' . esc_html( $_GET[ 'kReason' ] );
-        }
-
-        ?>
-
-        Hello
-
-
-        <?php
-
-        return $content; // Return the shortcode content
+        return $output; // Return the shortcode content
 
     }
 

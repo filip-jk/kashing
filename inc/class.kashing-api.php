@@ -84,6 +84,15 @@ class Kashing_API {
         $this->has_errors = false;
         $this->errors = array();
 
+        // Check if SSL enabled
+
+//        if ( !is_ssl() ) {
+//            $this->add_error( array(
+//                'type' => 'general',
+//                'msg' => __( 'The SSL is not being used on your website.', 'kashing' )
+//            ) );
+//        }
+
         // Determine the Test Mode
 
         if ( kashing_option( 'test_mode' ) == 'no' ) {
@@ -125,11 +134,27 @@ class Kashing_API {
             ) );
         }
 
+        // Return Pages
+
+        if ( !kashing_option( 'success_page' ) || kashing_option( 'success_page' ) && ( get_post_status( kashing_option( 'success_page' ) ) === false || get_post_status( kashing_option( 'success_page' ) ) == 'trash' ) ) {
+            $this->add_error( array(
+                'type' => 'general',
+                'msg' => __( 'The payment "Success Page" is not set.', 'kashing' )
+            ) );
+        }
+
+        if ( !kashing_option( 'failure_page' ) || kashing_option( 'failure_page' ) && ( get_post_status( kashing_option( 'failure_page' ) ) === false || get_post_status( kashing_option( 'failure_page' ) ) == 'trash' ) ) {
+            $this->add_error( array(
+                'type' => 'general',
+                'msg' => __( 'The payment "Failure Page" is not set.', 'kashing' )
+            ) );
+        }
+
         // Errors
 
         global $kashing_configuration_errors; // Store an information about the configuration error globally
 
-        if ( $this->has_errors == false) {
+        if ( $this->has_errors == false ) {
             $kashing_configuration_errors = false; // There are configuration errors
             return true; // Configuration is successful
         }
@@ -198,7 +223,7 @@ class Kashing_API {
             printf(
                 '<div class="%1$s"><p>%2$s <a href="%4$s">%3$s</a></p></div>',
                 esc_attr( $class ), esc_html( $message ),
-                esc_html__( 'Visit Plugin Settings', 'kashing' ),
+                esc_html__( 'Visit the plugin settings', 'kashing' ),
                 admin_url( 'edit.php?post_type=kashing&page=kashing-settings' )
             );
 
@@ -262,44 +287,14 @@ class Kashing_API {
 
         // Fields array
 
-        $form_fields = array(
-            array(
-                'name' => 'firstname',
-                'required' => true
-            ),
-            array(
-                'name' => 'lastname'
-            ),
-            array(
-                'name' => 'address1',
-                'required' => true
-            ),
-            array(
-                'name' => 'address2'
-            ),
-            array(
-                'name' => 'city',
-                'required' => true
-            ),
-            array(
-                'name' => 'postcode',
-                'required' => true
-            ),
-            array(
-                'name' => 'phone'
-            ),
-            array(
-                'name' => 'email',
-                'type' => 'email'
-            )
-        );
+        $kashing_fields = new Kashing_Fields();
 
         $field_values = array();
         $validation = true;
 
         // Fields validation loop
 
-        foreach ( $form_fields as $field ) {
+        foreach ( $kashing_fields->get_all_fields() as $field_name => $field ) {
 
             // If field is required
 
@@ -319,15 +314,19 @@ class Kashing_API {
 
             // Validate field
 
-            if ( $required == true && ( !isset( $_POST[ $field[ 'name' ] ] ) || isset( $_POST[ $field[ 'name' ] ] ) && $_POST[ $field[ 'name' ] ] == '' ) ) {
-                // Field is missing - either not set or empty input value
+            if ( $required == true && ( !isset( $_POST[ $field_name ] ) || isset( $_POST[ $field_name ] ) && $_POST[ $field_name ] == '' ) ) {
+                // Field is required but missing - either not set or empty input value
                 $validation = false;
-            } elseif ( isset( $_POST[ $field[ 'name' ] ] ) && $_POST[ $field[ 'name' ] ] != '' ) {
+            } elseif ( isset( $_POST[ $field_name ] ) && $_POST[ $field_name ] != '' ) {
                 if ( $field_type == 'email' ) {
-                    // TODO Additional email field checks
-                    $field_values[ $field[ 'name' ] ] = sanitize_email( $_POST[ $field[ 'name' ] ] );
+                    if ( !is_email( $_POST[ $field_name ] ) ) { // Validate the e-mail address
+                        $validation = false;
+                        $field_values[ $field_name ] = sanitize_text_field( $_POST[ $field_name ] );
+                    } else {
+                        $field_values[ $field_name ] = sanitize_email( $_POST[ $field_name ] );
+                    }
                 } else {
-                    $field_values[ $field[ 'name' ] ] = sanitize_text_field( $_POST[ $field[ 'name' ] ] );
+                    $field_values[ $field_name ] = sanitize_text_field( $_POST[ $field_name ] );
                 }
             }
 
@@ -354,7 +353,7 @@ class Kashing_API {
 
                 // Make a redirection
 
-                //wp_redirect( $redirect_url );
+                wp_redirect( $redirect_url );
 
             } else {
                 wp_die( __( 'There are some missing fields in the form.', 'kashing' ) );
@@ -515,7 +514,7 @@ class Kashing_API {
 
                 // Add plugin URL
 
-                $response_msg .= '<br><br><a href="' . esc_url( admin_url( 'edit.php?post_type=kashing&page=kashing-settings' ) ) . '">' . __( 'Visit Plugin Settings', 'kashing' ). '</a>';
+                $response_msg .= '<br><br><a href="' . esc_url( admin_url( 'edit.php?post_type=kashing&page=kashing-settings' ) ) . '">' . __( 'Visit the plugin settings', 'kashing' ). '</a>';
 
                 // Display a full response to the site admin
 

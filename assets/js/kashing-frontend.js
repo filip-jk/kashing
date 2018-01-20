@@ -1,21 +1,23 @@
 ( function($) {
 
-    // Window resize actions
+    /**
+     *  Handling the Kashing Form with JavaScript.
+     */
 
     $(document).ready(function() {
         'use strict';
 
-        // New CALL
+        // Take over the form submission
 
-        var $kashingForm = $( '#kashing-form' );
+        var $kashingForm = $( '.kashing-form' );
 
         $kashingForm.submit( function( event ) {
 
             var validated = false;
 
-            // TODO: Tutaj robimy walidacje i wyswietlamy ewentualne bledy w formularzu
+            // Validate the entire form
 
-            if ( validated == false ) {
+            if ( validateKashingForm() === false ) {
                 event.preventDefault(); // Prevent the default form submit.
             } else { // Form okay, proceed with submission.
                 return true;
@@ -23,128 +25,129 @@
 
         });
 
+        On field focusout
+
+        $( '.kashing-form input' ).on( 'focusout', function() {
+            validateFormField( $(this).attr('name'), $(this).val() ); // Validate a field that was just focused out by the user
+        });
+
     });
+
+    /**
+     *  Entire form validation (2nd layer, 1st one being the browser itself)
+     */
+
+    var kashingFormParameters = {
+        'firstname': {
+            'data-validation': {
+                "required": true
+            }
+        },
+        'lastname': {
+            'data-validation': {
+                "required": true
+            }
+        },
+        'address1': {
+            'data-validation': {
+                "required": true
+            }
+        },
+        'address2': {
+            'data-validation': {
+                "required": false
+            }
+        },
+        'city': {
+            'data-validation': {
+                "required": true
+            }
+        },
+        'postcode': {
+            'data-validation': {
+                "required": true
+            }
+        },
+        'email': {
+            'data-validation': {
+                "required": false,
+                "type": 'email'
+            }
+        },
+        'phone': {
+            'data-validation': {
+                "required": false
+            }
+        }
+    };
+
+    /**
+     *  Entire form validation (2nd layer, 1st one being the browser itself)
+     */
 
     function validateKashingForm() {
 
+        var inputFields = $( '.input-holder > input' ).serializeArray();
+        var errorFree = true;
+        var errorType = '';
 
-        var kashingFormParameters = {
-                'firstname': {
-                    'data-validation': {
-                        "required": true,
-                        "minlength": 1
-                    }
-                },
-            'lastname': {
-                    'data-validation': {
-                        "required": true,
-                        "minlength": 1
-                    }
-                },
-            'address1': {
-                    'data-validation': {
-                        "required": true,
-                        "minlength": 1
-                    }
-                },
-            'address2': {
-                    'data-validation': {
-                        "required": false
-                    }
-                },
-            'city': {
-                    'data-validation': {
-                        "required": true,
-                        "minlength": 1
-                    }
-                },
-            'postcode': {
-                    'data-validation': {
-                       "required": true,
-                        "minlength": 1
-                    }
-                },
-            'email': {
-                    'data-validation': {
-                        "required": true,
-                        "minlength": 1,
-                        'type': 'email'
-                    }
-                },
-            'phone': {
-                    'data-validation': {
-                        "required": false
-                    }
-                }
-        };
+        for ( var input in inputFields ) {
 
+            var fieldName = inputFields[ input ][ 'name' ];
+            var fieldValue = $( 'input[name="' + fieldName + '"]' ).attr( 'value' );
+            var formData = kashingFormParameters[fieldName];
 
-            var inputFields = $( '.input-holder > input' ).serializeArray();
+            // if not in kashingFormParameters
 
-            var errorFree = true;
-
-            for ( var input in inputFields ) {
-
-                var fieldName = inputFields[ input ][ 'name' ];
-
-                var formData = kashingFormParameters[fieldName];
-
-                //if not in kashingFormParameters
-                if(formData == undefined) {
-
-                    invalidData( fieldName );
-                    errorFree = false;
-
-                    continue;
-                }
-
-                var valAttributes = formData[ 'data-validation' ];
-                var selector = 'input[name="' + fieldName + '"]';
-                var fieldValue = $( selector ).attr( 'value' );
-
-                if ( typeof valAttributes !== 'undefined' ) {
-
-                    //var attributes = JSON.parse( valAttributes );
-                    var attributes = valAttributes;
-
-                    var isDataValid = true;
-
-                    for ( var attr in attributes ) {
-
-                        if ( !validationFunctions[attr]( fieldValue, attributes[attr] ) ) {
-
-                            isDataValid = false;
-                            errorFree = false;
-                            break;
-                        }
-                    }
-
-                    if ( isDataValid ) {
-
-                        validData( fieldName );
-
-                    } else {
-
-                        invalidData( fieldName );
-
-                    }
-
-
-                } else {
-
-                    //if no data-validation attributes
-                }
-
+            if ( formData == undefined ) {
+                invalidData( fieldName );
+                errorFree = false;
+                continue;
             }
 
-            if ( errorFree ) {
+            if ( validateFormField( fieldName, fieldValue ) === false ) {
+                errorFree = false;
+            }
 
+        }
+
+        return errorFree; // true or false
+    }
+
+    /**
+     *  Single field validation.
+     */
+
+    function validateFormField( fieldName, fieldValue ) {
+
+        var formData = kashingFormParameters[fieldName];
+        var valAttributes = formData[ 'data-validation' ];
+        var errorType;
+
+        if ( typeof valAttributes !== 'undefined' ) {
+
+            var attributes = valAttributes;
+            var isDataValid = true;
+
+            for ( var attr in attributes ) {
+                if ( !validationFunctions[attr]( fieldValue, attributes[attr] ) ) {
+                    isDataValid = false;
+                    errorType = attributes[attr]; // Store the type of the error
+                    break;
+                }
+            }
+
+            if ( isDataValid ) {
+                validData( fieldName );
                 return true;
-
             } else {
-
-                return false
+                invalidData( fieldName, errorType );
+                return false;
             }
+
+        }
+
+        return true;
 
     }
 
@@ -152,63 +155,25 @@
      *  Mark invalid field in kashing form.
      */
 
-    function invalidData( fieldName ) {
-
+    function invalidData( fieldName, errorType ) {
         var selector = 'input[name="' + fieldName + '"]';
-        var message = 'Invalid field';
 
         var parent = $( selector ).closest( '.input-holder' );
-        var error = parent.find( '.error' );
-
-
-        if ( error.length == 0 ) {
-
-            parent.addClass( 'invalid-field' );
-            parent.append( "<span class=\"error\">" +  message + "</span>" );
-
-        } else {
-            //already marked as invalid
-        }
-
-    }
-
-    /**
-     *  Invalid data on a server side.
-     */
-
-    function invalidServerData( errorData ) {
-
-
-        var parent = $( '.kashing-form' );
-
-        var error = $( '.kashing-form > .server-error');
+        var error = parent.find( '.kashing-form-error-msg' );
 
         if ( error.length == 0 ) {
 
-            parent.prepend( "<div class=\"server-error invalid-field\">" +  JSON.stringify(errorData) + "</div>" );
+            var message; // The error message based on errorType
 
-        } else {
-            //already marked as invalid
+            if ( errorType === 'email' ) {
+                message = kashing_wp_object.msg_invalid_email;
+            } else {
+                message = kashing_wp_object.msg_missing_field;
+            }
+
+            parent.addClass( 'validation-error' );
+            parent.append( '<span class="kashing-form-error-msg">' +  message + "</span>" );
         }
-
-    }
-
-    /**
-     *  Invalid data on a server side.
-     */
-
-    function validServerData() {
-
-        var error = $( '.kashing-form > .server-error');
-
-        if ( error.length > 0 ) {
-
-            error.remove();
-
-        } else {
-            //already marked as invalid
-        }
-
     }
 
     /**
@@ -216,108 +181,67 @@
      */
 
     function validData( fieldName ) {
-
         var selector = 'input[name="' + fieldName + '"]';
         var parent = $( selector ).closest( '.input-holder' );
 
-        parent.find( '.error' ).remove();
-        parent.removeClass( 'invalid-field' );
+        parent.find( '.kashing-form-error-msg' ).remove();
+        parent.removeClass( 'validation-error' );
     }
 
     /**
-     *  Validation function.
+     *  Validation function for the field being required.
      */
 
     var validationFunctions = [];
 
     validationFunctions['required'] = function (value, paramValue) {
-
+        if ( paramValue == false ) return true;
         if ( typeof(paramValue) === 'boolean' ) {
-
-            if (paramValue) {
-
+            if ( paramValue ) {
                 if ( value ) {
-
                     return true;
-
                 } else {
-
                     return false;
                 }
-
             } else {
-
                 return true;
-
             }
         } else {
-
             return false;
         }
     };
 
     /**
-     *  Validation function.
+     *  Validation function for a minimum number of characters in the field.
      */
 
     validationFunctions['minlength'] = function (value, paramValue) {
-
         if ( paramValue >>> 0 === parseFloat(paramValue) ) { //if positive integer
-
             if (value.length >= paramValue) {
-
                 return true;
-
             } else {
-
                 return false;
             }
         } else {
-
             return false;
         }
     };
 
     /**
-     *  Validation function.
+     *  Validation function for field types (i.e. email)
      */
 
-    validationFunctions['type'] = function (value, paramValue) {
-
-        if (paramValue === 'postcode') {
-
-            //value = value.replace(/\s/g, "");
-
-            var regex = '';
-            var country = $( '#kashing-country' ).val();
-
-
-            if( country === 'US' ) {
-
-                regex = /^\d{5}(?:[-\s]\d{4})?$/;
-
-            } else if ( country === 'UK' ){
-
-                regex = /^(([gG][iI][rR] {0,}0[aA]{2})|((([a-pr-uwyzA-PR-UWYZ][a-hk-yA-HK-Y]?[0-9][0-9]?)|(([a-pr-uwyzA-PR-UWYZ][0-9][a-hjkstuwA-HJKSTUW])|([a-pr-uwyzA-PR-UWYZ][a-hk-yA-HK-Y][0-9][abehmnprv-yABEHMNPRV-Y]))) {0,}[0-9][abd-hjlnp-uw-zABD-HJLNP-UW-Z]{2}))$/i;
-
+    validationFunctions['type'] = function ( value, paramValue ) {
+        if ( paramValue === 'email' ) {
+            if ( value != '' ) { // Do not make a check if no value provided
+                var regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                return regex.test( value );
             } else {
-                return false;
+                return true;
             }
-
-
-            return regex.test(value);
-
-        } else if ( paramValue === 'email' ) {
-
-            var regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-            return regex.test(value);
-
         } else {
-
             return false;
         }
-        
     };
 
 } ) ( jQuery );

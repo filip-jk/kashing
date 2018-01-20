@@ -42,7 +42,6 @@ class Kashing_Countries {
 	 */
 
 	function get_all() {
-		echo("<script>console.log('PHP: ".$this->countries."');</script>");
 		return $this->countries;
 
 	}
