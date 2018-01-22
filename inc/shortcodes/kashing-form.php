@@ -48,11 +48,12 @@ if ( !function_exists( 'kashing_form_shortcode' ) ) {
 
                     // Check if required
 
-                    $required_attr = '';
+                    $field_classes = $required_attr = '';
 
                     if ( array_key_exists( 'required', $field_data ) && $field_data[ 'required' ] == true ) {
                         $required = true;
                         $required_attr = ' required';
+                        $field_classes .= ' field-required';
                     } else {
                         $required = false;
                         $required_attr = '';
@@ -74,7 +75,7 @@ if ( !function_exists( 'kashing_form_shortcode' ) ) {
 
                     // Check if this is a response from the Admin Post, if so, make a validation
 
-                    $value = $error_class = $error_msg = '';
+                    $value = $error_msg = '';
 
                     if ( isset( $_GET ) && isset( $_GET[ 'validation_error'] ) ) {
 
@@ -85,7 +86,7 @@ if ( !function_exists( 'kashing_form_shortcode' ) ) {
                         $validate = $kashing_fields->validate_field( $field_name, $value ); // Returns an array
 
                         if ( $validate[ 'validated' ] == false ) { // There is a validation error
-                            $error_class = ' validation-error';
+                            $field_classes .= ' validation-error';
                             $error_msg = $validate[ 'error_msg' ];
                         }
 
@@ -95,7 +96,7 @@ if ( !function_exists( 'kashing_form_shortcode' ) ) {
 
                     $field_id = 'kashing-' . $field_name;
 
-                    echo '<div class="input-holder' . $error_class . '">';
+                    echo '<div class="input-holder' . $field_classes . '">';
 
                     // Field label
 
@@ -161,18 +162,18 @@ if ( !function_exists( 'kashing_form_shortcode' ) ) {
 
         } else {
 
-            echo '<div class="kashing-frontend-errors"><p>';
+            echo '<div class="kashing-frontend-notice kashing-errors">';
 
             if ( current_user_can( 'administrator' ) && isset( $kashing_api->errors ) ) {
-                echo '<strong>' . __( 'Kashing Payments plugin configuration errors: ', 'kashing' ) . '</strong>';
+                echo '<p><strong>' . __( 'Kashing Payments plugin configuration errors: ', 'kashing' ) . '</strong></p><ul>';
                 foreach ( $kashing_api->errors as $error ) {
                     if ( isset( $error['msg'] ) ) {
-                       echo '<br>' . esc_html( $error[ 'msg' ] );
+                       echo '<li>' . esc_html( $error[ 'msg' ] ) . '</li>';
                     }
                 }
-                echo '</p><a href="' . esc_url( admin_url( 'edit.php?post_type=kashing&page=kashing-settings' ) ) . '" target="_blank">' . __( 'Visit the plugin settings', 'kashing' ). '</a>';
+                echo '</ul><a href="' . esc_url( admin_url( 'edit.php?post_type=kashing&page=kashing-settings' ) ) . '" target="_blank">' . __( 'Visit the plugin settings', 'kashing' ). '</a>';
             } else {
-                esc_html_e( 'There are some Kashing Payments plugin configuration errors.', 'kashing' );
+                echo '<p>' . esc_html__( 'There are some Kashing Payments plugin configuration errors.', 'kashing' ) . '</p>';
             }
 
             echo '</div>';

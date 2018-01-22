@@ -13,7 +13,7 @@ if ( !function_exists( 'kashing_payment_success' ) ) {
 
         // Check if this is indeed a return from a gateway.
 
-        if ( $_GET[ 'kTransactionID' ] && current_user_can( 'administrator' ) ) {
+        if ( isset( $_GET[ 'kTransactionID' ] ) && current_user_can( 'administrator' ) ) {
 
             // Display some extra information for an admin user.
 

@@ -9,46 +9,52 @@ if ( !function_exists( 'kashing_payment_failure' ) ) {
 
     function kashing_payment_failure( $atts, $content ) {
 
+        $admin_notice = '';
+
         extract( shortcode_atts( array(
-            "some_attr" => '',
+            "admin_notice" => 'yes',
         ), $atts ) );
 
-        $kashing_api = new Kashing_API();
+        $output = '';
 
-        if ( isset( $_GET ) && array_key_exists( 'kTransactionID' , $_GET ) ) {
+        if ( isset( $_GET[ 'kTransactionID' ] ) ) { // Proceed only if parameter is available in $_GET
+
             $transaction_id = $_GET[ 'kTransactionID' ];
+            $kashing_api = new Kashing_API();
+
+            $transaction_details = $kashing_api->api_get_transaction_error_details( $transaction_id );
+
+            // Regular user output
+
+            if ( isset( $transaction_details['gatewaymessage'] ) ) {
+                $extra_class = ( isset( $transaction_details['nogateway'] ) ) ? ' no-gateway-message' : '';
+                $output = '<div class="kashing-transaction-details kashing-gateway-message' . $extra_class . '"><p>';
+                $output .= esc_html( $transaction_details['gatewaymessage'] );
+                $output .= '</p></div>';
+            }
+
+            // Extra details for admin users
+
+            if ( $admin_notice != 'no' && current_user_can( 'administrator' ) ) {
+                $output .= '<div class="kashing-frontend-notice kashing-errors">';
+                $output .= '<p><strong>' . __( 'Kashing payment failed.', 'kashing' ) . '</strong></p><p>' . __( 'Transaction details', 'kashing' ) . ':</p><ul>';
+                $output .= '<li>' . __( 'Transaction ID', 'kashing' ) . ': <strong>' . esc_html( $_GET[ 'kTransactionID' ] ) . '</strong></li>';
+                if ( $_GET[ 'kResponse' ] ) {
+                    $output .= '<li>' . __( 'Response Code', 'kashing' ) . ': <strong>' . esc_html( $_GET[ 'kResponse' ] ) . '</strong></li>';
+                }
+                if ( $_GET[ 'kReason' ] ) {
+                    $output .= '<li>' . __( 'Reason Code', 'kashing' ) . ': <strong>' . esc_html( $_GET[ 'kReason' ] ) . '</strong></li>';
+                }
+                if ( isset( $transaction_details['gatewaymessage'] ) ) {
+                    $output .= '<li>' . __( 'Gateway Message', 'kashing' ) . ': <strong>' . esc_html( $transaction_details['gatewaymessage'] ) . '</strong></li>';
+                }
+                $output .= '</ul><p>' . __( 'This notice is displayed to site administrators only.', 'kashing' ) . '</p>';
+                $output .= '</div>';
+            }
+
         }
 
-        //$transaction_id = 'pZ68tUjWmcW';
-
-        ob_start(); // We can use HTML directly thanks to this
-
-        $kashing_api->api_get_transaction_error_details( $transaction_id );
-
-        echo '<pre>';
-        var_dump( $kashing_api->api_get_transaction_error_details( $transaction_id ) );
-        echo '</pre>';
-
-//        if ( $_GET[ 'TransactionID' ] ) { // Retrieve parameters from the URL
-//            $content .= '<br>Transaction ID: ' . esc_html( $_GET[ 'TransactionID' ] );
-//        } else {
-//            return;
-//        }
-//
-//        if ( $_GET[ 'Response' ] ) {
-//            $content .= '<br>Response: ' . esc_html( $_GET[ 'Response' ] );
-//        }
-//
-//        if ( $_GET[ 'Reason' ] ) {
-//            $content .= '<br>Reason: ' . esc_html( $_GET[ 'Reason' ] );
-//        }
-
-        // TODO: Tutaj trzeba dodac obsluge tego nowego zapytania do API po wiecej info o bledzie.
-
-        $content = ob_get_contents(); // End content "capture" and store it into a variable.
-        ob_end_clean();
-
-        return $content; // Return the shortcode content
+        return $output; // Return the shortcode content
 
     }
 

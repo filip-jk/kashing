@@ -71,8 +71,7 @@ class Kashing_Shortcodes {
 
             wp_send_json_success( json_encode( $response ) );
         } else {
-
-            wp_send_json_error( 'no posts yet');
+            wp_send_json_error( __( 'No kashing forms created.', 'kashing' ) );
         }
 
         wp_reset_query();

@@ -1,0 +1,433 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Kashing Payments\n"
+"POT-Creation-Date: 2018-01-22 13:29+0100\n"
+"PO-Revision-Date: 2018-01-22 13:29+0100\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 2.0.5\n"
+"X-Poedit-Basepath: ..\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Poedit-KeywordsList: _;_e;__;esc_html_e;esc_html__\n"
+"X-Poedit-SearchPath-0: .\n"
+
+#: inc/class.kashing-api.php:119
+msgid "The secret key is missing."
+msgstr ""
+
+#: inc/class.kashing-api.php:133
+msgid "The merchant ID is missing."
+msgstr ""
+
+#: inc/class.kashing-api.php:142
+msgid "The payment \"Success Page\" is not set."
+msgstr ""
+
+#: inc/class.kashing-api.php:149
+msgid "The payment \"Failure Page\" is not set."
+msgstr ""
+
+#: inc/class.kashing-api.php:221
+msgid "Kashing configuration issues:"
+msgstr ""
+
+#: inc/class.kashing-api.php:226 inc/class.kashing-api.php:517
+#: inc/shortcodes/kashing-form.php:173
+msgid "Visit the plugin settings"
+msgstr ""
+
+#: inc/class.kashing-api.php:246
+msgid ""
+"There are some Kashing Payments plugin configuration issues. Please visit "
+"the plugin page to learn more."
+msgstr ""
+
+#: inc/class.kashing-api.php:248 inc/class.kashing-api.php:264
+#: inc/class.kashing-api.php:273 inc/class.kashing-api.php:380
+#: inc/class.kashing-api.php:460 inc/class.kashing-api.php:488
+#: inc/class.kashing-api.php:524
+msgid "Something went wrong. Please contact the site administrator."
+msgstr ""
+
+#: inc/class.kashing-api.php:262
+msgid ""
+"The form with a given ID in the shortcode does not exist. Please add the "
+"[kashing_form] shortcode again."
+msgstr ""
+
+#: inc/class.kashing-api.php:271
+msgid "No form ID was provided in the Kashing Form."
+msgstr ""
+
+#: inc/class.kashing-api.php:282
+msgid "Illegal form submission detected."
+msgstr ""
+
+#: inc/class.kashing-api.php:359
+msgid "There are some missing fields in the form."
+msgstr ""
+
+#: inc/class.kashing-api.php:378
+msgid "The amount was not provided in the form settings."
+msgstr ""
+
+#: inc/class.kashing-api.php:401
+msgid "No description."
+msgstr ""
+
+#: inc/class.kashing-api.php:458
+msgid "There was something wrong with the WordPress API Call."
+msgstr ""
+
+#: inc/class.kashing-api.php:486
+msgid ""
+"There was something wrong with a redirection response from the Kashing "
+"server."
+msgstr ""
+
+#: inc/class.kashing-api.php:502
+msgid "There was an error with the Kashing API call"
+msgstr ""
+
+#: inc/class.kashing-api.php:512
+msgid "Suggestion"
+msgstr ""
+
+#: inc/class.kashing-api.php:531
+msgid "There was something wrong with the Kashing response."
+msgstr ""
+
+#: inc/class.kashing-api.php:551
+msgid "Please make sure your Merchant ID is correct."
+msgstr ""
+
+#: inc/class.kashing-api.php:554
+msgid "Please make sure that your Secret API Key and Merchant ID are correct."
+msgstr ""
+
+#: inc/class.kashing-api.php:675
+msgid "There was an error with a transaction lookup."
+msgstr ""
+
+#: inc/class.kashing-api.php:689
+msgid "No additional gateway message provided."
+msgstr ""
+
+#: inc/class.kashing-fields.php:27
+msgid "First Name"
+msgstr ""
+
+#: inc/class.kashing-fields.php:32 inc/class.kashing-metaboxes.php:58
+msgid "Last Name"
+msgstr ""
+
+#: inc/class.kashing-fields.php:37
+msgid "Address 1"
+msgstr ""
+
+#: inc/class.kashing-fields.php:42 inc/class.kashing-metaboxes.php:65
+msgid "Address 2"
+msgstr ""
+
+#: inc/class.kashing-fields.php:46
+msgid "City"
+msgstr ""
+
+#: inc/class.kashing-fields.php:51 inc/class.kashing-metaboxes.php:71
+msgid "Country"
+msgstr ""
+
+#: inc/class.kashing-fields.php:57
+msgid "Post Code"
+msgstr ""
+
+#: inc/class.kashing-fields.php:62 inc/class.kashing-metaboxes.php:83
+msgid "Phone"
+msgstr ""
+
+#: inc/class.kashing-fields.php:66 inc/class.kashing-metaboxes.php:77
+msgid "Email"
+msgstr ""
+
+#: inc/class.kashing-fields.php:103 index.php:141 index.php:168
+msgid "This field is required."
+msgstr ""
+
+#: inc/class.kashing-fields.php:110 index.php:169
+msgid "Please provide a valid e-mail address."
+msgstr ""
+
+#: inc/class.kashing-metabox.php:137
+msgid "This field is required"
+msgstr ""
+
+#: inc/class.kashing-metabox.php:182
+msgid "Unsupported field type"
+msgstr ""
+
+#: inc/class.kashing-metaboxes.php:23
+msgid "Form Settings"
+msgstr ""
+
+#: inc/class.kashing-metaboxes.php:30 inc/class.kashing-settings.php:123
+msgid "General"
+msgstr ""
+
+#: inc/class.kashing-metaboxes.php:33 inc/class.kashing-post-type.php:71
+msgid "Amount"
+msgstr ""
+
+#: inc/class.kashing-metaboxes.php:34
+msgid "Enter the form amount that will be processed with the payment system."
+msgstr ""
+
+#: inc/class.kashing-metaboxes.php:43 inc/class.kashing-post-type.php:72
+msgid "Description"
+msgstr ""
+
+#: inc/class.kashing-metaboxes.php:44
+msgid "The form transaction description."
+msgstr ""
+
+#: inc/class.kashing-metaboxes.php:53
+msgid "Form Fields"
+msgstr ""
+
+#: inc/class.kashing-metaboxes.php:54
+msgid ""
+"Configure the form fields. You may disable fields that are not required by "
+"the system."
+msgstr ""
+
+#: inc/class.kashing-metaboxes.php:59
+msgid "Enable the \"Last Name\" field."
+msgstr ""
+
+#: inc/class.kashing-metaboxes.php:66
+msgid "Enable the \"Address 2\" field."
+msgstr ""
+
+#: inc/class.kashing-metaboxes.php:72
+msgid "Enable the \"Country\" field."
+msgstr ""
+
+#: inc/class.kashing-metaboxes.php:78
+msgid "Enable the \"Email\" field."
+msgstr ""
+
+#: inc/class.kashing-metaboxes.php:84
+msgid "Enable the \"Phone\" field."
+msgstr ""
+
+#: inc/class.kashing-post-type.php:35
+msgid "Kashing"
+msgstr ""
+
+#: inc/class.kashing-post-type.php:52
+msgid "Add New Form"
+msgstr ""
+
+#: inc/class.kashing-post-type.php:53
+msgid "View Forms"
+msgstr ""
+
+#: inc/class.kashing-post-type.php:74
+msgid "Date"
+msgstr ""
+
+#: inc/class.kashing-settings.php:82
+msgid "Configuration"
+msgstr ""
+
+#: inc/class.kashing-settings.php:86
+msgid "Test Mode"
+msgstr ""
+
+#: inc/class.kashing-settings.php:87
+msgid ""
+"Activate or deactivate the plugin Test Mode. When Test Mode is activated, no "
+"credit card payments are processed."
+msgstr ""
+
+#: inc/class.kashing-settings.php:87
+msgid "Retrieve your Kashing API Keys"
+msgstr ""
+
+#: inc/class.kashing-settings.php:90
+msgid "Yes"
+msgstr ""
+
+#: inc/class.kashing-settings.php:91
+msgid "No"
+msgstr ""
+
+#: inc/class.kashing-settings.php:97
+msgid "Test Merchant ID"
+msgstr ""
+
+#: inc/class.kashing-settings.php:98
+msgid "Enter your testing Merchant ID."
+msgstr ""
+
+#: inc/class.kashing-settings.php:103
+msgid "Test Secret Key"
+msgstr ""
+
+#: inc/class.kashing-settings.php:104
+msgid "Enter your testing Kashing Secret Key."
+msgstr ""
+
+#: inc/class.kashing-settings.php:109
+msgid "Live Merchant ID"
+msgstr ""
+
+#: inc/class.kashing-settings.php:110
+msgid "Enter your live Merchant ID."
+msgstr ""
+
+#: inc/class.kashing-settings.php:115
+msgid "Live Secret Key"
+msgstr ""
+
+#: inc/class.kashing-settings.php:116
+msgid "Enter your live Kashing Secret Key."
+msgstr ""
+
+#: inc/class.kashing-settings.php:127
+msgid "Choose Currency"
+msgstr ""
+
+#: inc/class.kashing-settings.php:128
+msgid "Choose a currency for your payments."
+msgstr ""
+
+#: inc/class.kashing-settings.php:135
+msgid "Success Page"
+msgstr ""
+
+#: inc/class.kashing-settings.php:136
+msgid ""
+"Choose the page your clients will be redirected to after the payment is "
+"successful."
+msgstr ""
+
+#: inc/class.kashing-settings.php:142
+msgid "Failure Page"
+msgstr ""
+
+#: inc/class.kashing-settings.php:143
+msgid ""
+"Choose the page your clients will be redirected to after the payment failed."
+msgstr ""
+
+#: inc/class.kashing-settings.php:166 inc/class.kashing-settings.php:184
+msgid "Kashing Payments Settings"
+msgstr ""
+
+#: inc/class.kashing-settings.php:167 index.php:101
+msgid "Settings"
+msgstr ""
+
+#: inc/class.kashing-shortcodes.php:34 index.php:142
+msgid "Add Kashing Form"
+msgstr ""
+
+#: inc/class.kashing-shortcodes.php:74
+msgid "No kashing forms created."
+msgstr ""
+
+#: inc/helpers/currency/currency-misc/currency-list.php:11
+msgid "British Pounds Sterling"
+msgstr ""
+
+#: inc/shortcodes/kashing-form.php:150
+msgid "Pay with Kashing"
+msgstr ""
+
+#: inc/shortcodes/kashing-form.php:154
+msgid "Test mode enabled."
+msgstr ""
+
+#: inc/shortcodes/kashing-form.php:167
+msgid "Kashing Payments plugin configuration errors: "
+msgstr ""
+
+#: inc/shortcodes/kashing-form.php:175
+msgid "There are some Kashing Payments plugin configuration errors."
+msgstr ""
+
+#: inc/shortcodes/payment-failure.php:40
+msgid "Kashing payment failed."
+msgstr ""
+
+#: inc/shortcodes/payment-failure.php:40 inc/shortcodes/payment-success.php:21
+msgid "Transaction details"
+msgstr ""
+
+#: inc/shortcodes/payment-failure.php:41 inc/shortcodes/payment-success.php:22
+msgid "Transaction ID"
+msgstr ""
+
+#: inc/shortcodes/payment-failure.php:43 inc/shortcodes/payment-success.php:24
+msgid "Response Code"
+msgstr ""
+
+#: inc/shortcodes/payment-failure.php:46 inc/shortcodes/payment-success.php:27
+msgid "Reason Code"
+msgstr ""
+
+#: inc/shortcodes/payment-failure.php:49
+msgid "Gateway Message"
+msgstr ""
+
+#: inc/shortcodes/payment-failure.php:51 inc/shortcodes/payment-success.php:29
+msgid "This notice is displayed to site administrators only."
+msgstr ""
+
+#: inc/shortcodes/payment-success.php:21
+msgid "Kashing payment successful!"
+msgstr ""
+
+#: index.php:117 index.php:185
+msgid "Payment Success"
+msgstr ""
+
+#: index.php:119 index.php:200
+msgid "Payment Failure"
+msgstr ""
+
+#: index.php:143
+msgid "Form Name"
+msgstr ""
+
+#: index.php:144
+msgid "No Kashing forms found!"
+msgstr ""
+
+#: index.php:144
+msgid "You need to create payment forms before adding them."
+msgstr ""
+
+#: index.php:144
+msgid "Create new forms"
+msgstr ""
+
+#: index.php:145
+msgid "You may create and manage forms"
+msgstr ""
+
+#: index.php:145
+msgid "here"
+msgstr ""
+
+#: index.php:186
+msgid "Payment successful!"
+msgstr ""
+
+#: index.php:201
+msgid "Your payment failed."
+msgstr ""

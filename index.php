@@ -1,15 +1,16 @@
 <?php
 
 /*
-
-Plugin Name: 	Kashing
-Plugin URI: 	ttp://themeforest.net/user/Veented
-Description: 	Easily integrate Kashing Payment with your WordPress website.
-Version: 		1.0
-Author: 		Veented
-Author URI: 	http://themeforest.net/user/Veented
-License: 		GPL2
-
+Plugin Name:  Kashing Payments
+Plugin URI:   https://developer.wordpress.org/plugins/the-basics/
+Description:  Easily integrate Kashing Payment with your WordPress website.
+Version:      1.0
+Author:       Veented
+Author URI:   https://veented.com
+License:      GPL2
+License URI:  https://www.gnu.org/licenses/gpl-2.0.html
+Text Domain:  kashing
+Domain Path:  /languages
 */
 
 if ( ! defined( 'WPINC' ) ) {
@@ -70,6 +71,9 @@ class Kashing_Payments {
         // Plugin Options Page
         require_once KASHING_PATH . 'inc/class.kashing-settings.php';
 
+        // Localization
+        add_action( 'plugins_loaded', array( $this, 'action_load_plugin_textdomain' ) );
+
     }
 
     /**
@@ -87,6 +91,14 @@ class Kashing_Payments {
         // Custom page states (failure and success pages)
         add_filter( 'display_post_states', array( $this, 'custom_page_states' ), 10, 2 );
 
+    }
+
+    /**
+     * Plugin text domain.
+     */
+
+    public function action_load_plugin_textdomain() {
+        load_plugin_textdomain( 'kashing', FALSE, basename( dirname( __FILE__ ) ) . '/languages/' );
     }
 
     /**
@@ -138,7 +150,11 @@ class Kashing_Payments {
             'kashing_wp_object',
             array(
                 'wp_ajax_url' => admin_url( 'admin-ajax.php' ),
-                'msg_missing_field' => __( 'This field is required.', 'kashing' )
+                'msg_missing_field' => esc_html__( 'This field is required.', 'kashing' ),
+                'text_add_kashing_form' => esc_html__( 'Add Kashing Form', 'kashing' ),
+                'text_form_name' => esc_html__( 'Form Name', 'kashing' ),
+                'msg_no_forms' => '<h5>' . esc_html__( 'No Kashing forms found!', 'kashing' ) . '</h5><p>' . __( 'You need to create payment forms before adding them.', 'kashing' ) . '</p><p><a href="' . esc_url( admin_url( 'post-new.php?post_type=kashing' ) ) . '" class="button">' . esc_html__( 'Create new forms', 'kashing' ) . '</a></p>',
+                'msg_new_forms_how_to' => '<p>' . __( 'You may create and manage forms', 'kashing' ) . ': <a href="' . esc_url( admin_url( 'edit.php?post_type=kashing' ) ) . '" target="_blank">' . esc_html__( 'here', 'kashing' ) . '</a>.</p>'
             )
         );
 
@@ -161,8 +177,8 @@ class Kashing_Payments {
             array(
                 'wp_ajax_url' => admin_url( 'admin-ajax.php' ),
                 'page_id' => get_the_ID(),
-                'msg_missing_field' => __( 'This field is required.', 'kashing' ),
-                'msg_invalid_email' => __( 'Please provide a valid e-mail address.', 'kashing' )
+                'msg_missing_field' => esc_html__( 'This field is required.', 'kashing' ),
+                'msg_invalid_email' => esc_html__( 'Please provide a valid e-mail address.', 'kashing' )
             )
         );
 
@@ -174,17 +190,14 @@ class Kashing_Payments {
 
     public function plugin_activation_hook() {
 
-        // Plugin Options Page
-        require_once KASHING_PATH . 'inc/class.kashing-settings.php';
-
         // Check if payment success page is set, if not, create a new one (either if a page with this title is
 
         if ( kashing_option( 'success_page' ) == null || get_post_status( kashing_option( 'success_page' ) ) === false ) {
             $page_args = array(
                 'post_title' => __( 'Payment Success', 'kashing' ),
-                'post_content' => 'Example content',
+                'post_content' => '<p>' . __( 'Payment successful!', 'kashing' ) . '</p>[kashing_payment_success]',
                 'post_status' => 'publish',
-                'post_type' => 'page'
+                'post_type' => 'page',
             );
             $new_page_id = wp_insert_post( $page_args );
             if ( $new_page_id != 0 ) {
@@ -197,7 +210,7 @@ class Kashing_Payments {
         if ( kashing_option( 'failure_page' ) == null || get_post_status( kashing_option( 'failure_page' ) ) === false ) {
             $page_args = array(
                 'post_title' => __( 'Payment Failure', 'kashing' ),
-                'post_content' => 'Example content',
+                'post_content' => '<p>' . __( 'Your payment failed.', 'kashing' ) . '</p>[kashing_payment_failure admin_notice="yes"]',
                 'post_status' => 'publish',
                 'post_type' => 'page'
             );

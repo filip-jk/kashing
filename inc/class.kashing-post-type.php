@@ -50,6 +50,7 @@ class Kashing_Post_Type {
             'rewrite' => false,
             'labels' => array(
                 'add_new' => __( 'Add New Form', 'kashing' ),
+                'add_new_item' => __( 'Add New Form', 'kashing' ),
                 'all_items' => __( 'View Forms', 'kashing' )
             )
         );

@@ -15,6 +15,14 @@
     width: 100%;
 }
 
+/* Required field asterix */
+
+.kashing-form .field-required > label:after {
+    content: "*";
+    color: #dc3232;
+    margin-left: 3px;
+}
+
 /* Validation Errors */
 
 .kashing-form .validation-error input,

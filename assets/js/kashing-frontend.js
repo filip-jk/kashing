@@ -25,7 +25,7 @@
 
         });
 
-        On field focusout
+        // On field focusout
 
         $( '.kashing-form input' ).on( 'focusout', function() {
             validateFormField( $(this).attr('name'), $(this).val() ); // Validate a field that was just focused out by the user

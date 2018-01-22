@@ -54,22 +54,9 @@ class Kashing_Metaboxes {
                     'desc' => __( 'Configure the form fields. You may disable fields that are not required by the system.', 'kashing' )
                 ),
                 array(
-                    'id' => $prefix . 'last_name',
-                    'title' => __( 'Last Name', 'kashing' ),
-                    'desc' => __( 'Enable the "Last Name" field.', 'kashing' ),
-                    'type' => 'checkbox',
-                    'std' => true,
-                ),
-                array(
                     'id' => $prefix . 'address2',
                     'title' => __( 'Address 2', 'kashing' ),
                     'desc' => __( 'Enable the "Address 2" field.', 'kashing' ),
-                    'type' => 'checkbox',
-                ),
-                array(
-                    'id' => $prefix . 'country',
-                    'title' => __( 'Country', 'kashing' ),
-                    'desc' => __( 'Enable the "Country" field.', 'kashing' ),
                     'type' => 'checkbox',
                 ),
                 array(

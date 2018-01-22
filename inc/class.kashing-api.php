@@ -625,31 +625,20 @@ class Kashing_API {
      *
      * @param string
      *
-     * @return array
+     * @return mixed
      */
 
     public function api_get_transaction_error_details( $transaction_id, $uid = null) {
 
         // Full API Call URL
 
-        $url = $this->api_url . 'json/transaction/find';
-        //$url = $this->api_url . 'transaction/retrieve';
-
-        // Call data
-
-        $merchant_id = kashing_option( 'test_merchant_id' ); // Merchant ID
+        $url = $this->api_url . 'transaction/find';
 
         // Call data array
 
         $data_array = array(
-            'MerchantID' => $this->merchant_id,
-            'TransactionID' => $transaction_id
+            'token' => $transaction_id
         );
-
-        // TODO: Add UID if exists
-
-        // if ( $uid = null ) $uid = ''; // Optional parameter
-        // 'uid' => $uid
 
         // Psign
 
@@ -660,15 +649,13 @@ class Kashing_API {
         $final_data_array = array_merge(
             $data_array,
             array(
-                'pSign' => $call_psign
+                'psign' => $call_psign
             )
         );
 
         // Encode the final transaction array to JSON
 
         $body = json_encode( $final_data_array );
-
-        print_r( $body ); // TODO Remove
 
         // Make the API Call
 
@@ -685,16 +672,40 @@ class Kashing_API {
         // Deal with the API response
 
         if ( is_wp_error( $response ) ) {
-            //wp_send_json_error( $response );
-        } else {
-            return $response;
+            return __( 'There was an error with a transaction lookup.', 'kashing' );
         }
 
-//        echo '<pre>';
-//        var_dump( $response );
-//        echo '</pre>';
+        $response_body = json_decode( $response[ 'body' ] );
 
-        return;
+
+        $return = array(
+            'transactionID' => $transaction_id
+        );
+
+        // The gateway message
+
+        if ( isset( $response_body->gatewaymessage ) ) {
+            if ( $response_body->gatewaymessage == '' ) {
+                $return["gatewaymessage"] = __( 'No additional gateway message provided.', 'kashing' );
+                $return["nogateway"] = true;
+            } else {
+                $return["gatewaymessage"] = esc_html( $response_body->gatewaymessage );
+            }
+        }
+
+        // The reason and response codes
+
+        if ( isset( $response_body->responsecode ) ) {
+            $return["responsecode"] = esc_html( $response_body->responsecode );
+        }
+
+        if ( isset( $response_body->reasoncode ) ) {
+            $return["reasoncode"] = esc_html( $response_body->reasoncode );
+        }
+
+        // Return the array
+
+        return $return;
 
     }
 
